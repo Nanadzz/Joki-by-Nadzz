@@ -14,7 +14,6 @@ backend/server.js (API) · backend/catalog.js (katalog harga default) · fronten
 1. `docker compose up -d --build` dengan env produksi (`NODE_ENV=production`, `JWT_SECRET`, `ENC_KEY`, `GATEWAY_SECRET`, `TRUST_PROXY=1`). Server menolak start di production bila secret belum diisi.
 2. Pasang nginx/Caddy sebagai reverse proxy ke port 3000 dan aktifkan HTTPS (Let's Encrypt / Cloudflare).
 3. Mode production mematikan pembayaran simulasi: sambungkan payment gateway nyata (Midtrans/Xendit/dll.) ke `POST /api/payments/webhook` (signature HMAC-SHA256 header `x-signature`, kunci idempoten `transactionId`).
-4. Untuk produksi, build Tailwind dengan CLI (bukan CDN) dan ganti data file JSON dengan PostgreSQL.
 
 ## Harga & katalog
 Harga default ada di `backend/catalog.js` (acuan pasar Okt 2026). Saat server menyala, item yang belum ada ditambahkan ke `data.json` berdasarkan `sku`; harga yang sudah kamu ubah di Dashboard Admin → Layanan **tidak** ditimpa. Pembayaran selalu lunas (sistem DP sudah dihapus).
