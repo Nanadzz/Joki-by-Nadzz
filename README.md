@@ -1,10 +1,6 @@
 # Nadzz Joki - Platform Jasa Joki Game
 Nadya Paramesti Amirasyifa · NIM 60225070
 
-## Menjalankan
-    cd backend && npm install && npm start      # http://localhost:3000
-atau `docker compose up --build`.
-
 pelanggan: daftar di halaman Masuk.
 **Ganti nomor WhatsApp admin** di Dashboard Admin → Pengaturan (`adminWhatsapp`, format 62812...).
 
