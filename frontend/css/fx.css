@@ -1,0 +1,17 @@
+/* Efek interaktif Nadzz Joki: tombol bounce + garis pinggir neon bergradasi mengikuti kursor */
+:root{--neon-a:#2de2e6;--neon-b:#b66dff}
+/* --- Neon border (diatur js/fx.js lewat --mx --my --o) --- */
+.neon{--mx:-999px;--my:-999px;--o:.18;transition:box-shadow .25s ease;
+ box-shadow:0 0 calc(var(--o)*26px) rgba(45,226,230,calc(var(--o)*.32)),0 0 calc(var(--o)*46px) rgba(182,109,255,calc(var(--o)*.18))}
+.neon::before,.neon::after{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;pointer-events:none;
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.neon::before{background:linear-gradient(135deg,rgba(45,226,230,.28),rgba(182,109,255,.28))}            /* garis dasar redup */
+.neon::after{background:radial-gradient(170px circle at var(--mx) var(--my),var(--neon-a),var(--neon-b) 48%,transparent 72%);opacity:var(--o)} /* garis menyala mengikuti kursor */
+/* --- Tombol bounce --- */
+@keyframes bnc{0%{transform:translateY(0) scale(1,1)}22%{transform:translateY(-9px) scale(1.05,.95)}45%{transform:translateY(0) scale(.96,1.05)}65%{transform:translateY(-4px) scale(1.02,.99)}82%{transform:translateY(0) scale(.99,1.01)}100%{transform:translateY(0) scale(1,1)}}
+@keyframes bnc-idle{0%,70%,100%{transform:translateY(0)}78%{transform:translateY(-7px)}86%{transform:translateY(0)}93%{transform:translateY(-3px)}}
+.btn:hover,.btn-grad:hover,.btn-line:hover,.tab:hover{animation:bnc .7s cubic-bezier(.3,.8,.4,1)}
+.btn:active,.btn-grad:active,.btn-line:active,.tab:active{animation:none;transform:scale(.93);transition:transform .08s}
+.bnc-idle{animation:bnc-idle 3s ease-in-out infinite}.bnc-idle:hover{animation:bnc .7s cubic-bezier(.3,.8,.4,1)}
+.field:focus{box-shadow:0 0 0 2px rgba(45,226,230,.35),0 0 22px rgba(182,109,255,.28)}
+@media (prefers-reduced-motion:reduce){.btn:hover,.btn-grad:hover,.btn-line:hover,.tab:hover,.bnc-idle{animation:none}.neon{transition:none}}

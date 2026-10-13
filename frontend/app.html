@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — Nadzz Joki</title>
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#02040a"><link rel="icon" href="/icons/nadzzjoki.png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Nadzz Joki — Nadya Paramesti Amirasyifa · NIM 60225070 · tema hitam & ungu tua */
+:root{--bg:#02040a;--pn:#07101a;--pn2:#0a1826;--p:#0e9fb0;--p2:#7e22ce;--pl:#67e8f9;--tx:#e6f7fb;--mu:#7f93a3;--ln:rgba(103,232,249,.16);--ok:#34d399;--no:#f87171;--wa:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:15px/1.6 Manrope,system-ui,sans-serif;color:var(--tx);background:radial-gradient(900px 500px at 15% -10%,rgba(45,226,230,.13) 0,transparent 60%),radial-gradient(700px 500px at 100% 30%,rgba(182,109,255,.15) 0,transparent 60%),var(--bg);background-attachment:fixed;min-height:100vh}
+h1,h2,h3,.logo{font-family:Sora,sans-serif}a{color:var(--pl);text-decoration:none}
+header{position:sticky;top:0;z-index:5;background:rgba(2,4,10,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--ln)}
+.bar{max-width:1100px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:19px;color:var(--tx);display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo i{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--p),var(--p2));display:grid;place-items:center;font-style:normal}
+nav{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}nav a{color:var(--mu)}nav a:hover,nav a.on{color:var(--tx)}
+main{max-width:1100px;margin:auto;padding:36px 20px 80px}
+.btn{display:inline-block;padding:10px 20px;border-radius:9px;border:1px solid var(--p);background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;font:700 13.5px Manrope;cursor:pointer}
+.btn.g{background:transparent;color:var(--pl)}.btn.s{padding:6px 13px;font-size:12.5px}.btn:hover{filter:brightness(1.2)}
+.hero{padding:50px 0 34px;max-width:640px}.eye{color:var(--pl);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:40px;line-height:1.15;margin-bottom:16px}.mu{color:var(--mu)}
+.tabs{display:flex;gap:8px;margin:26px 0 20px;overflow-x:auto}
+.tabs button{padding:8px 16px;border-radius:99px;border:1px solid var(--ln);background:var(--pn);color:var(--mu);font:600 13px Manrope;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border-color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{background:linear-gradient(160deg,var(--pn2),var(--pn));border:1px solid var(--ln);border-radius:14px;padding:20px}
+.card h3{font-size:16px;margin-bottom:6px}.price{font:700 18px Sora;color:var(--pl);margin:12px 0}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+form{display:grid;gap:14px;max-width:520px}label{font-size:12.5px;color:var(--mu);display:grid;gap:6px}
+input,select,textarea{width:100%;padding:11px 13px;border-radius:9px;background:#050c14;border:1px solid var(--ln);color:var(--tx);font:inherit}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--p)}
+.bd{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(45,226,230,.14);color:var(--pl)}
+.bd.ok{background:rgba(52,211,153,.15);color:var(--ok)}.bd.no{background:rgba(248,113,113,.15);color:var(--no)}.bd.wa{background:rgba(251,191,36,.12);color:var(--wa)}
+.pg{height:6px;background:#0c1c28;border-radius:9px;overflow:hidden;margin:12px 0}.pg b{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--pl))}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:600;font-size:12px}
+.wrap{overflow-x:auto}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat b{display:block;font:700 22px Sora}.stat span{font-size:12.5px;color:var(--mu)}
+.tl{list-style:none;border-left:1px solid var(--ln);margin:16px 0 0 6px;padding-left:18px}.tl li{margin-bottom:10px;font-size:13.5px}.tl small{color:var(--mu)}
+h2{font-size:22px;margin:30px 0 14px}.err{color:var(--no)}.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--p2);padding:11px 20px;border-radius:10px;display:none;z-index:9}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.hero h1{font-size:30px}.two{grid-template-columns:1fr}}
+</style><link rel="stylesheet" href="/css/fx.css"></head><body>
+<header><div class="bar"><a class="logo" href="/index.html"><img src="/assets/nadzzjoki.png" alt="" style="width:34px;height:34px;border-radius:50%">Nadzz Joki</a><nav id="nav"></nav></div></header>
+<main id="view"></main><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),rp=n=>'Rp '+Number(n||0).toLocaleString('id-ID'),view=$('#view'),fd=f=>Object.fromEntries(new FormData(f));
+const ST={DRAFT:'Draft',PENDING_PAYMENT:'Menunggu pembayaran',PAID:'Dibayar',QUEUED:'Dalam antrian',ASSIGNED:'Ditugaskan',IN_PROGRESS:'Sedang dikerjakan',COMPLETED:'Selesai — menunggu konfirmasi',VERIFIED:'Terverifikasi',DISPUTED:'Sengketa',REFUNDED:'Refund',CANCELLED:'Dibatalkan'};
+const bd=s=>`<span class="bd ${['VERIFIED'].includes(s)?'ok':['DISPUTED','CANCELLED','REFUNDED'].includes(s)?'no':['PENDING_PAYMENT','COMPLETED'].includes(s)?'wa':''}">${ST[s]||s}</span>`;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=JSON.parse(localStorage.getItem('nadzz')||'null'),timer,dp;
+const setS=s=>{S=s;s?localStorage.setItem('nadzz',JSON.stringify(s)):localStorage.removeItem('nadzz')};
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2800)}
+async function api(p,o={}){const r=await fetch('/api'+p,{method:o.method||(o.body?'POST':'GET'),headers:{'Content-Type':'application/json',...(S?{Authorization:'Bearer '+S.accessToken}:{}),...(o.headers||{})},body:o.body?JSON.stringify(o.body):undefined});
+ if(r.status===401&&S?.refreshToken&&!o.retry){const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:S.refreshToken})});
+  if(rr.ok){setS(await rr.json());return api(p,{...o,retry:1})}setS(null);location.href='/login.html'}
+ const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Terjadi kesalahan');return d}
+const P=(u,b)=>api(u,{method:'POST',body:b});
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e}); // prompt dipicu setelah order berhasil
+
+const ACT={
+ pay:async id=>{const p=await P(`/orders/${id}/pay`);if(confirm(`Bayar ${rp(p.amount)} lewat gateway sandbox?`)){await P(`/orders/${id}/simulate-pay`);toast('Pembayaran berhasil')}},
+ confirm:id=>P(`/orders/${id}/confirm`),dispute:async id=>{const r=prompt('Alasan sengketa?');if(r)await P(`/orders/${id}/dispute`,{reason:r})},
+ accept:id=>P(`/booster/orders/${id}/accept`),reject:id=>P(`/booster/orders/${id}/reject`),claim:id=>P(`/booster/orders/${id}/claim`),complete:id=>P(`/booster/orders/${id}/complete`),
+ progress:async id=>{const v=prompt('Progres (0-99)?');if(v!==null)await P(`/booster/orders/${id}/progress`,{progress:v})},
+ cred:async id=>{const c=await api(`/booster/orders/${id}/credentials`);alert(`Login: ${c.login}\nSandi: ${c.password}`)},
+ payout:async()=>{const v=prompt('Nominal penarikan (Rp)?');if(v)await P('/booster/payouts',{amount:v})},
+ assign:async id=>{const b=prompt('User ID penjoki (lihat tab Penjoki)?');if(b)await P(`/admin/orders/${id}/assign`,{boosterId:b})},
+ rv:id=>P(`/admin/orders/${id}/resolve`,{outcome:'verify'}),rr:id=>P(`/admin/orders/${id}/resolve`,{outcome:'refund'}),
+ pok:id=>P(`/admin/payouts/${id}/process`,{approve:true}),pno:id=>P(`/admin/payouts/${id}/process`,{approve:false}),
+ reply:async id=>{const m=prompt('Balasan untuk pelanggan?');if(m)await P(`/admin/tickets/${id}/reply`,{message:m,status:'ANSWERED'})},logout:()=>{setS(null);location.href='/index.html'}};
+view.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;try{await ACT[b.dataset.a](b.dataset.id);route()}catch(x){toast(x.message)}};
+const btn=(a,id,t,c='')=>`<button class="btn s ${c}" data-a="${a}" data-id="${id}">${t}</button>`;
+const bar=o=>`<div class="pg"><b style="width:${o.progress||0}%"></b></div>`;
+const tl=h=>`<ul class="tl">${(h||[]).map(x=>`<li>${ST[x.status]||x.status}${x.note?` — ${esc(x.note)}`:''}<br><small>${new Date(x.at).toLocaleString('id-ID')}</small></li>`).join('')}</ul>`;
+
+// ===== halaman =====
+const R={
+async home(){const c=await api('/catalog');
+ view.innerHTML=`<section class="hero"><div class="eye">Jasa joki game profesional</div><h1>Serahkan grind-mu, terima hasilnya.</h1><p class="mu" style="margin-bottom:22px">Pilih paket, bayar penuh, lalu pantau progres pengerjaan secara langsung. Kredensial akunmu dienkripsi.</p><a class="btn" href="#cat">Lihat Layanan</a> <a class="btn g" href="#/track">Cek Transaksi</a></section>
+ <div class="tabs" id="cat">${c.games.map((g,i)=>`<button data-i="${i}">${g.gameName}</button>`).join('')}</div><div class="grid" id="lst"></div>`;
+ const show=i=>{document.querySelectorAll('.tabs button').forEach((b,j)=>b.classList.toggle('on',i==j));
+  $('#lst').innerHTML=(c.games[i]?.services||[]).map(s=>`<div class="card"><h3>${s.title}</h3><p class="mu" style="font-size:13px">${s.description||''}</p><div class="price">${rp(s.basePrice)} <small class="mu" style="font-family:Manrope;font-weight:400">· est. ${s.estimatedHours} jam</small></div><div class="row"><span class="mu" style="font-size:12.5px">${s.tiers.express?`Express ${rp(Math.round(s.basePrice*s.tiers.express))}`:(s.unit&&s.unit!=='paket'?'per '+s.unit:'')}</span><a class="btn s" href="/pesan.html?service=${s.id}">Pesan</a></div></div>`).join('')};
+ $('.tabs').onclick=e=>e.target.dataset.i!=null&&show(e.target.dataset.i);show(0)},
+
+async track(){view.innerHTML=`<h2>Cek Transaksi</h2><form id="f"><label>Kode pesanan<input name="c" placeholder="CH2610..." required></label><button class="btn">Lacak</button></form><div id="r"></div>`;
+ $('#f').onsubmit=async e=>{e.preventDefault();try{const o=await api('/track/'+fd(e.target).c.trim());$('#r').innerHTML=`<div class="card" style="margin-top:22px;max-width:520px"><div class="row"><h3>${o.title}</h3>${bd(o.status)}</div><p class="mu">${o.gameName} · ${rp(o.paidAmount)} / ${rp(o.totalAmount)}</p>${bar(o)}${tl(o.history)}</div>`}catch(x){$('#r').innerHTML=`<p class="err" style="margin-top:16px">${x.message}</p>`}}},
+
+async login(){const c=await api('/catalog'),gs=c.games.map(g=>g.gameName);
+ view.innerHTML=`<div class="tabs"><button class="on" id="t1">Masuk</button><button id="t2">Daftar</button></div>
+ <form id="f"><label>Email<input name="email" type="email" required></label><label>Kata sandi<input name="password" type="password" minlength="8" required></label>
+ <div id="reg" style="display:none;gap:14px;display:none"><label>Nama tampilan<input name="displayName"></label><label>Daftar sebagai<select name="role"><option value="CUSTOMER">Pelanggan</option><option value="BOOSTER">Penjoki (Booster)</option></select></label>
+ <label>Skill penjoki (pilih game)<select name="skills" multiple>${gs.map(g=>`<option>${g}</option>`).join('')}</select></label></div><button class="btn" id="sb">Masuk</button><p class="mu" style="font-size:12.5px">Demo — admin@chaa.id / admin123 · booster@chaa.id / booster123</p></form>`;
+ let reg=false;const sw=r=>{reg=r;$('#reg').style.display=r?'grid':'none';$('#sb').textContent=r?'Buat Akun':'Masuk';$('#t1').classList.toggle('on',!r);$('#t2').classList.toggle('on',r)};
+ $('#t1').onclick=()=>sw(false);$('#t2').onclick=()=>sw(true);
+ $('#f').onsubmit=async e=>{e.preventDefault();const b=fd(e.target);b.skills=[...e.target.skills.selectedOptions].map(o=>o.value);
+  try{setS(await P(reg?'/auth/register':'/auth/login',b));location.hash=S.user.role==='ADMIN'?'#/admin':S.user.role==='BOOSTER'?'#/booster':'#/orders'}catch(x){toast(x.message)}}},
+
+async order(id){if(S?.user.role!=='CUSTOMER'){toast('Masuk sebagai pelanggan untuk memesan');return location.href='/login.html'}
+ const c=await api('/catalog'),s=c.games.flatMap(g=>g.services).find(x=>x.id===id);if(!s)throw new Error('Layanan tidak ditemukan');
+ const key=crypto.randomUUID();
+ view.innerHTML=`<h2>${s.title}</h2><p class="mu" style="margin-bottom:20px">${s.gameName} · est. ${s.estimatedHours} jam</p><form id="f">
+ <label>Kecepatan<select name="tier"><option value="standard">Standar — ${rp(s.basePrice)}</option>${s.tiers.express?`<option value="express">Express (prioritas) — ${rp(Math.round(s.basePrice*s.tiers.express))}</option>`:''}</select></label>
+ <label ${s.unit==='paket'?'style="display:none"':''}>Jumlah (${s.unit}, maks. ${s.maxQty})<input name="qty" type="number" min="1" max="${s.maxQty}" value="1"></label>
+ <div class="two"><label>UID<input name="gameUid" required></label><label>Server<input name="server" placeholder="Asia / TW / ..."></label></div>
+ <div class="two"><label>Login akun<input name="accountLogin" required></label><label>Sandi akun<input name="accountPassword" type="password" required></label></div>
+ <label>Target pengerjaan<textarea name="targetDescription" rows="2" required></textarea></label><label>Catatan<textarea name="notes" rows="2"></textarea></label>
+ <p class="mu" style="font-size:12.5px">Kredensial dienkripsi; hanya penjoki yang mengerjakan dapat membukanya selama order aktif, lalu dihapus otomatis.</p><button class="btn">Buat Pesanan</button></form>`;
+ $('#f').onsubmit=async e=>{e.preventDefault();const b=fd(e.target);b.serviceId=id;
+  try{await api('/orders',{body:b,headers:{'Idempotency-Key':key}});toast('Pesanan dibuat — lanjutkan pembayaran');location.hash='#/orders';if(dp){setTimeout(()=>{dp.prompt();dp=null},800)}}catch(x){toast(x.message)}}},
+
+async akun(){if(!S)return location.href='/login.html';
+ view.innerHTML=`<h2>Akun Saya</h2><p class="mu" style="margin-bottom:16px">${esc(S.user.displayName)} · ${esc(S.user.email)}</p><div class="card" style="max-width:520px"><h3>Ganti kata sandi</h3><form id="cp" style="margin-top:14px">
+  <label>Sandi saat ini<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+  <label>Sandi baru (min. 8 karakter)<input name="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+  <label>Ulangi sandi baru<input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
+  <button class="btn">Simpan sandi</button></form></div>`;
+ $('#cp').onsubmit=async e=>{e.preventDefault();const f=fd(e.target);if(f.newPassword!==f.confirm)return toast('Ulangi sandi baru tidak sama');
+  try{setS(await P('/auth/change-password',{currentPassword:f.currentPassword,newPassword:f.newPassword}));e.target.reset();toast('Sandi berhasil diganti')}catch(x){toast(x.message)}}},
+async orders(){if(!S)return location.href='/login.html';const l=await api('/orders');
+ view.innerHTML=`<h2>Pesanan Saya</h2><div class="grid">${l.map(o=>`<div class="card"><div class="row"><h3>${o.title}</h3>${bd(o.status)}</div><p class="mu" style="font-size:13px">${o.code} · ${o.gameName}</p>${bar(o)}
+ <div class="row"><span>${rp(o.paidAmount)} / ${rp(o.totalAmount)}</span></div>
+ <div class="acts">${o.worker?.whatsapp?`<a class="btn s g" target="_blank" rel="noopener" href="https://wa.me/${o.worker.whatsapp}?text=${encodeURIComponent('Halo, saya pemilik pesanan '+o.code)}">WhatsApp worker</a>`:''}${o.status==='PENDING_PAYMENT'?btn('pay',o.id,'Bayar '+rp(o.due)):''}${o.status==='COMPLETED'?btn('confirm',o.id,'Konfirmasi selesai')+btn('dispute',o.id,'Ajukan sengketa','g'):''}</div></div>`).join('')||'<p class="mu">Belum ada pesanan.</p>'}</div>`;
+ timer=setInterval(()=>S&&location.hash==='#/orders'&&R.orders(),12000)},
+
+async booster(){if(S?.user.role!=='BOOSTER')return location.href='/login.html';const d=await api('/booster/me'),p=d.profile,days=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+ const av=i=>p.availability.find(a=>a.dayOfWeek===i)||{};
+ const oc=o=>`<div class="card"><div class="row"><h3>${o.title}</h3>${bd(o.status)}</div><p class="mu" style="font-size:13px">${o.code} · UID ${esc(o.gameUid)} · ${esc(o.targetDescription)}</p>${bar(o)}<div class="acts">
+ ${o.status==='ASSIGNED'?btn('accept',o.id,'Terima')+btn('reject',o.id,'Tolak','g'):''}${o.status==='IN_PROGRESS'?btn('cred',o.id,'Lihat kredensial','g')+btn('progress',o.id,'Update progres','g')+btn('complete',o.id,'Tandai selesai'):''}${o.status==='QUEUED'?btn('claim',o.id,'Ambil order'):''}</div></div>`;
+ view.innerHTML=`<h2>Dashboard Penjoki</h2>${p.active?'':'<div class="card" style="border-color:#f5b94a;margin-bottom:14px"><b>Menunggu persetujuan admin</b><p class="mu" style="font-size:13px;margin-top:4px">Akunmu belum aktif, jadi belum menerima order dan belum tampil di halaman Worker. Lengkapi profil dan ketersediaan di bawah; hubungi admin lewat WhatsApp bila perlu.</p></div>'}<div class="stats"><div class="card stat"><b>${rp(p.balance)}</b><span>Saldo bagi hasil</span></div><div class="card stat"><b>${p.load}/${p.maxConcurrentOrders}</b><span>Beban order</span></div><div class="card stat"><b>${p.rating}</b><span>Rating</span></div></div>
+ <div class="acts" style="margin-bottom:8px">${btn('payout','','Ajukan penarikan')}</div>
+ ${d.queue.length?`<h2>Antrian (mode rebutan)</h2><div class="grid">${d.queue.map(oc).join('')}</div>`:''}
+ <h2>Order Saya</h2><div class="grid">${d.orders.map(oc).join('')||'<p class="mu">Belum ada order.</p>'}</div>
+ <h2>Ketersediaan</h2><form id="av" style="max-width:640px">${days.map((n,i)=>`<div class="two" style="grid-template-columns:50px 1fr 1fr 80px;align-items:center"><span>${n}</span><input type="time" name="s${i}" value="${av(i).startTime||''}"><input type="time" name="e${i}" value="${av(i).endTime||''}"><input type="number" min="1" name="m${i}" value="${av(i).maxOrdersInSlot||1}"></div>`).join('')}
+ <label>Maks order bersamaan<input type="number" name="max" min="1" value="${p.maxConcurrentOrders}"></label><button class="btn">Simpan</button><p class="mu" style="font-size:12.5px">Kosongkan jam = hari libur. Jika semua kosong, dianggap selalu tersedia.</p></form>
+ <h2>Profil Worker</h2><form id="pf"><label>Nomor WhatsApp<input name="whatsapp" value="${esc(p.whatsapp)}" placeholder="08xxxxxxxxxx"></label><label>Bio singkat<textarea name="bio" rows="2">${esc(p.bio)}</textarea></label><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" name="showWhatsapp" style="width:auto" ${p.showWhatsapp?'checked':''}> Tampilkan tombol WhatsApp di halaman Worker</label><button class="btn">Simpan Profil</button></form>
+ <h2>Riwayat Penarikan</h2><div class="wrap"><table><tr><th>Nominal</th><th>Status</th><th>Referensi</th></tr>${d.payouts.map(x=>`<tr><td>${rp(x.amount)}</td><td>${x.status}</td><td>${x.referenceNumber||'-'}</td></tr>`).join('')}</table></div>`;
+ $('#av').onsubmit=async e=>{e.preventDefault();const f=fd(e.target),a=days.map((_,i)=>({dayOfWeek:i,startTime:f['s'+i],endTime:f['e'+i],maxOrdersInSlot:f['m'+i]})).filter(x=>x.startTime&&x.endTime);
+  try{await api('/booster/availability',{method:'PUT',body:{availability:a,maxConcurrentOrders:f.max}});toast('Ketersediaan tersimpan')}catch(x){toast(x.message)}};
+ $('#pf').onsubmit=async e=>{e.preventDefault();const f=fd(e.target);try{await api('/booster/profile',{method:'PUT',body:{whatsapp:f.whatsapp,bio:f.bio,showWhatsapp:e.target.showWhatsapp.checked}});toast('Profil tersimpan')}catch(x){toast(x.message)}};
+ timer=setInterval(()=>location.hash==='#/booster'&&!document.activeElement.closest('form')&&R.booster(),12000)},
+
+async admin(tab='laporan'){if(S?.user.role!=='ADMIN')return location.href='/login.html';const d=await api('/admin/data'),r=d.report,T=['laporan','pesanan','layanan','penjoki','payout','tiket','pengaturan'];
+ const tb=(h,rows)=>`<div class="wrap"><table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(x=>`<tr>${x.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+ const body={
+ laporan:()=>`<div class="stats"><div class="card stat"><b>${rp(r.labaRugi.labaBersih)}</b><span>Laba bersih</span></div><div class="card stat"><b>${rp(r.neraca.kas)}</b><span>Kas</span></div><div class="card stat"><b>${rp(r.neraca.hutangPenjoki)}</b><span>Hutang ke penjoki</span></div></div>
+  <h3>Laporan Laba Rugi</h3>${tb(['Pos','Nominal'],[['Pendapatan (penerimaan − refund)',rp(r.labaRugi.pendapatan)],['Beban jasa (bagi hasil penjoki)',rp(r.labaRugi.bebanJasa)],['Beban gateway',rp(r.labaRugi.bebanGateway)],['Beban operasional',rp(r.labaRugi.bebanOperasional)],['<b>Laba bersih</b>',`<b>${rp(r.labaRugi.labaBersih)}</b>`]])}
+  <h3 style="margin-top:22px">Neraca</h3>${tb(['Pos','Nominal'],[['Aset — Kas',rp(r.neraca.kas)],['Aset — Piutang gateway',rp(r.neraca.piutangGateway)],['Kewajiban — Hutang ke penjoki',rp(r.neraca.hutangPenjoki)],['Ekuitas',rp(r.neraca.ekuitas)]])}
+  <h3 style="margin-top:22px">Arus Kas</h3>${tb(['Aktivitas','Nominal'],[['Operasional masuk',rp(r.arusKas.operasionalMasuk)],['Operasional keluar',rp(r.arusKas.operasionalKeluar)],['Investasi',rp(0)],['Pendanaan',rp(0)],['<b>Netto</b>',`<b>${rp(r.arusKas.netto)}</b>`]])}
+  <h3 style="margin-top:22px">Catat Beban Operasional</h3><form id="ex" class="two"><label>Nominal<input name="amount" type="number" required></label><label>Keterangan<input name="description"></label><button class="btn">Simpan</button></form>`,
+ pesanan:()=>tb(['Kode','Layanan','Status','Penjoki','Total','Aksi'],d.orders.map(o=>[o.code,o.title,bd(o.status),esc(d.boosters.find(b=>b.userId===o.boosterId)?.displayName)||'-',rp(o.totalAmount),
+  `<div class="acts">${o.status==='QUEUED'?btn('assign',o.id,'Tugaskan'):''}${o.status==='DISPUTED'?btn('rv',o.id,'Verifikasi')+btn('rr',o.id,'Refund','g'):''}</div>`])),
+ layanan:()=>`<p class="mu" style="font-size:12.5px;margin-bottom:10px">Ubah harga langsung di kolom Harga (tersimpan otomatis). Centang/hapus centang Aktif untuk menampilkan atau menyembunyikan layanan di pricelist.</p>`+tb(['Game','Kategori','Paket','Satuan','Harga (Rp)','Aktif','Komisi %'],d.services.map(s=>[esc(s.gameName),esc(s.category||'-'),esc(s.title),s.unit||'paket',`<input data-p="${s.id}" type="number" min="0" value="${s.basePrice}" style="width:110px">`,`<input data-sa="${s.id}" type="checkbox" style="width:auto" ${s.active?'checked':''}>`,s.commissionPct??'default']))+`<h3 style="margin:22px 0 12px">Tambah Layanan</h3><form id="sv" class="two"><label>Game<input name="gameName" required placeholder="Genshin Impact / Mobile Legends / Honkai Star Rail"></label><label>Kategori<input name="category" placeholder="mis. Endgame / Per Bintang"></label><label>Judul paket<input name="title" required></label><label>Harga dasar (Rp)<input name="basePrice" type="number" required></label><label>Satuan<select name="unit"><option value="paket">paket (dipesan 1x)</option><option value="bintang">bintang (bisa banyak)</option><option value="hari">hari (bisa banyak)</option></select></label><label>Maks jumlah (untuk bintang/hari)<input name="maxQty" type="number" value="100"></label><label>Estimasi jam (per satuan)<input name="estimatedHours" type="number" step="0.1" value="1"></label><label>Label (opsional)<input name="badge" placeholder="Populer / Hemat"></label><label>Komisi % (opsional)<input name="commissionPct" type="number"></label><label>Deskripsi<input name="description"></label><button class="btn">Tambah</button></form>`,
+ penjoki:()=>(d.boosters.some(b=>!b.active)?`<div class="card" style="border-color:#f5b94a;margin-bottom:14px"><b>${d.boosters.filter(b=>!b.active).length} worker menunggu persetujuan</b><p class="mu" style="font-size:13px;margin-top:4px">Periksa nama, skill, dan WhatsApp-nya, lalu centang Aktif agar bisa menerima order.</p></div>`:'')+tb(['Nama','Status','Aktif','WhatsApp','User ID','Skill','Beban','Saldo','Komisi % (override)'],[...d.boosters].sort((a,b)=>(a.active===b.active?0:a.active?1:-1)).map(b=>[esc(b.displayName),b.active?'Aktif':'<b style="color:#f5b94a">Menunggu</b>',`<input data-ba="${b.userId}" type="checkbox" style="width:auto" ${b.active?'checked':''}>`,esc(b.whatsapp||'-'),`<small>${b.userId}</small>`,b.skills.join(', '),`${b.load}/${b.maxConcurrentOrders}`,rp(b.balance),`<input data-b="${b.userId}" type="number" value="${b.sharePercentage??''}" placeholder="default" style="width:90px">`])),
+ payout:()=>tb(['Penjoki','Nominal','Status','Aksi'],d.payouts.map(p=>[esc(d.boosters.find(b=>b.userId===p.boosterId)?.displayName),rp(p.amount),p.status,p.status==='PENDING'?`<div class="acts">${btn('pok',p.id,'Setujui')+btn('pno',p.id,'Tolak','g')}</div>`:p.referenceNumber||''])),
+ tiket:()=>tb(['Kode','Pengirim','Pesan','Status','Aksi'],d.tickets.map(t=>[t.code,esc(t.name)+'<br><small>'+esc(t.contact)+'</small>','<b>'+esc(t.subject)+'</b><br><small>'+esc(t.message)+'</small>'+t.replies.map(x=>'<br><small style="color:var(--pl)">↪ '+esc(x.message)+'</small>').join(''),t.status,btn('reply',t.id,'Balas')])),
+ pengaturan:()=>`<form id="st" class="two">${Object.entries(d.settings).map(([k,v])=>['adminWhatsapp','brand'].includes(k)?`<label>${k}<input name="${k}" value="${esc(v)}"></label>`:k==='assignMode'?`<label>Mode penugasan<select name="${k}"><option ${v==='auto'?'selected':''} value="auto">Otomatis</option><option ${v==='broadcast'?'selected':''} value="broadcast">Broadcast rebutan</option></select></label>`:`<label>${k}<input name="${k}" type="number" value="${v}"></label>`).join('')}<button class="btn">Simpan</button></form><p class="mu" style="font-size:12.5px;margin-top:12px">commissionPct = komisi platform · gatewayFeeBp = biaya gateway (basis poin).</p>`}[tab]();
+ view.innerHTML=`<h2>Panel Admin</h2><div class="tabs">${T.map(t=>`<button class="${t===tab?'on':''}" data-t="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div>${body}`;
+ $('.tabs').onclick=e=>e.target.dataset.t&&R.admin(e.target.dataset.t);
+ const sub=(id,fn)=>$(id)&&($(id).onsubmit=async e=>{e.preventDefault();try{await fn(fd(e.target));toast('Tersimpan');R.admin(tab)}catch(x){toast(x.message)}});
+ sub('#ex',b=>P('/admin/expenses',b));
+ view.querySelectorAll('[data-p]').forEach(i=>i.onchange=()=>P('/admin/services',{id:i.dataset.p,basePrice:i.value}).then(()=>toast('Harga diperbarui')).catch(x=>toast(x.message)));
+ view.querySelectorAll('[data-sa]').forEach(i=>i.onchange=()=>P('/admin/services',{id:i.dataset.sa,active:i.checked}).then(()=>toast(i.checked?'Layanan diaktifkan':'Layanan disembunyikan')).catch(x=>toast(x.message)));sub('#sv',b=>P('/admin/services',b));sub('#st',b=>api('/admin/settings',{method:'PUT',body:b}));
+ view.querySelectorAll('[data-ba]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.ba,{method:'PUT',body:{active:i.checked}}).then(()=>{toast(i.checked?'Worker diaktifkan':'Worker dinonaktifkan');setTimeout(()=>location.reload(),500)}).catch(x=>toast(x.message)));
+ view.querySelectorAll('[data-b]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.b,{method:'PUT',body:{sharePercentage:i.value}}).then(()=>toast('Komisi diperbarui')).catch(x=>toast(x.message)))}
+};
+function nav(){const r=S?.user.role,L=[['/index.html','Beranda'],['/pricelist.html','Pricelist'],['/pesan.html','Pesan'],['/worker.html','Worker'],['/cs.html','Customer Service'],['/track.html','Cek Transaksi']];
+ if(r==='CUSTOMER')L.push(['#/orders','Pesanan Saya']);if(r==='BOOSTER')L.push(['#/booster','Dashboard']);if(r==='ADMIN')L.push(['#/admin','Admin']);if(r)L.push(['#/akun','Akun']);
+ $('#nav').innerHTML=L.map(([h,t])=>`<a href="${h}" class="${location.hash===h||(!location.hash&&h==='#/')?'on':''}">${t}</a>`).join('')+(S?`<a href="#" onclick="ACT.logout();return false">Keluar (${esc(S.user.displayName)})</a>`:'<a href="/login.html">Masuk / Daftar</a>')}
+function route(){clearInterval(timer);const[p,a]=location.hash.replace(/^#\/?/,'').split('/');if(!p)return location.replace(S?({ADMIN:'#/admin',BOOSTER:'#/booster'}[S.user.role]||'#/orders'):'/index.html');nav();(R[p||'home']||R.home)(a).catch(e=>view.innerHTML=`<p class="err">${e.message}</p>`)}
+addEventListener('hashchange',route);route();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');
+</script><script type="module" src="/js/fx.js"></script></body></html>
