@@ -5,7 +5,7 @@ Nadya Paramesti Amirasyifa · NIM 60225070
     cd backend && npm install && npm start      # http://localhost:3000
 atau `docker compose up --build`.
 
-Akun demo: admin@chaa.id / admin123 · booster@chaa.id / booster123 (pelanggan: daftar di halaman Masuk).
+pelanggan: daftar di halaman Masuk.
 **Ganti nomor WhatsApp admin** di Dashboard Admin → Pengaturan (`adminWhatsapp`, format 62812...).
 
 ## Halaman
