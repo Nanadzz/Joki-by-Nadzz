@@ -1,4 +1,4 @@
-# Nadzz Joki — Platform Jasa Joki Game
+# Nadzz Joki - Platform Jasa Joki Game
 Nadya Paramesti Amirasyifa · NIM 60225070
 
 ## Menjalankan
