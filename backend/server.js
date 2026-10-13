@@ -32,7 +32,8 @@ const seed=()=>{const b=uid();return{
 let db=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):seed();
 const cleanWa=n=>String(n||'').replace(/\D/g,'').replace(/^0/,'62');
 // migrasi data lama + nilai bawaan
-db.tickets=db.tickets||[];db.settings={adminWhatsapp:'6281234567890',brand:'Nadzz Joki',...db.settings};
+db.tickets=db.tickets||[];db.settings={adminWhatsapp:'6285656317710',brand:'Nadzz Joki',...db.settings};
+if(db.settings.adminWhatsapp==='6281234567890')db.settings.adminWhatsapp='6285656317710'; // migrasi: ganti nomor demo lama di data.json yang sudah ada
 db.boosters.forEach(b=>{b.whatsapp=b.whatsapp||'';b.bio=b.bio||'';b.showWhatsapp=!!b.showWhatsapp});
 // migrasi: sistem DP dihapus — buang pengaturannya agar tidak muncul lagi di panel admin (data lama tetap aman)
 delete db.settings.dpPct;delete db.settings.reservationHours;
@@ -125,6 +126,15 @@ app.post('/api/auth/login',limit(20),h(req=>{const u=db.users.find(x=>x.email===
  if(!ok)throw err(401,'Email atau sandi salah');return session(u)}));
 app.post('/api/auth/refresh',h(req=>{const r=db.refresh[req.body.refreshToken];delete db.refresh[req.body.refreshToken];
  if(!r||r.exp<now())throw err(401,'Sesi berakhir');return session(db.users.find(u=>u.id===r.uid))}));
+
+app.post('/api/auth/change-password',auth(),limit(10),h(req=>{const u=db.users.find(x=>x.id===req.user.sub)||nf(),{currentPassword,newPassword}=req.body;
+ let ok=false;try{ok=checkPw(String(currentPassword||''),u.passwordHash)}catch{}
+ if(!ok)throw err(401,'Sandi saat ini salah');
+ if(typeof newPassword!=='string'||newPassword.length<8)throw err(400,'Sandi baru minimal 8 karakter');
+ if(newPassword===currentPassword)throw err(400,'Sandi baru harus berbeda dari sandi saat ini');
+ u.passwordHash=hashPw(newPassword);
+ for(const t in db.refresh)if(db.refresh[t].uid===u.id)delete db.refresh[t]; // cabut semua sesi lama
+ return session(u)}));
 
 // Katalog & lacak publik
 app.get('/api/catalog',h(()=>({games:[...new Set(db.services.filter(s=>s.active).map(s=>s.gameName))].map(g=>({gameName:g,services:db.services.filter(s=>s.active&&s.gameName===g).sort((a,b)=>a.sort-b.sort)}))})));

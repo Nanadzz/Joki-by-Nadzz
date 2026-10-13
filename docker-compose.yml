@@ -1,0 +1,11 @@
+services:
+  nadzz-joki:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      JWT_SECRET: ${JWT_SECRET:-ganti-di-produksi}
+      ENC_KEY: ${ENC_KEY:-ganti-kunci-enkripsi}
+      GATEWAY_SECRET: ${GATEWAY_SECRET:-gateway-secret}
+      DATA_FILE: /data/data.json
+    volumes: ["./data:/data"]

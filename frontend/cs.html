@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customer Service — Nadzz Joki</title><meta name="description" content="Bantuan Nadzz Joki: WhatsApp, FAQ, dan tiket customer service.">
+<meta name="theme-color" content="#02040a"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/nadzzjoki.png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script><script src="/js/tailwind.config.js"></script><link rel="stylesheet" href="/css/theme.css"><link rel="stylesheet" href="/css/fx.css">
+</head><body class="min-h-screen"><div id="site-header"></div>
+<main class="mx-auto max-w-6xl px-5 py-10">
+ <h1 class="text-3xl font-bold mb-2">Customer <span class="grad-text">service</span></h1><p class="text-slate-400 mb-8">Pilih cara tercepat untuk mendapat bantuan.</p>
+ <div class="grid md:grid-cols-3 gap-4 mb-12">
+  <a id="wa" target="_blank" rel="noopener" class="glass hov rounded-2xl p-6 block"><div class="text-3xl mb-3">💬</div><h3 class="font-semibold mb-1">WhatsApp Admin</h3><p class="text-sm text-slate-400">Respons paling cepat untuk pertanyaan pesanan.</p></a>
+  <a href="#tiket" class="glass hov rounded-2xl p-6 block"><div class="text-3xl mb-3">🎫</div><h3 class="font-semibold mb-1">Kirim Tiket</h3><p class="text-sm text-slate-400">Untuk kendala yang perlu ditindaklanjuti dan dilacak.</p></a>
+  <a href="#faq" class="glass hov rounded-2xl p-6 block"><div class="text-3xl mb-3">📚</div><h3 class="font-semibold mb-1">FAQ</h3><p class="text-sm text-slate-400">Jawaban atas pertanyaan yang sering diajukan.</p></a></div>
+ <div class="grid lg:grid-cols-2 gap-8">
+  <section id="tiket" class="glass rounded-2xl p-6"><h2 class="text-xl font-semibold mb-4">Kirim tiket</h2>
+   <form id="tf" class="grid gap-4"><div class="grid sm:grid-cols-2 gap-4"><label class="lbl">Nama<input name="name" class="field" required></label><label class="lbl">Email / WhatsApp<input name="contact" class="field" required></label></div>
+   <div class="grid sm:grid-cols-2 gap-4"><label class="lbl">Kode pesanan (opsional)<input name="orderCode" class="field" placeholder="NJ2610..."></label>
+   <label class="lbl">Kategori<select name="subject" class="field"><option>Pembayaran</option><option>Progres pesanan</option><option>Masalah akun game</option><option>Sengketa / refund</option><option>Lainnya</option></select></label></div>
+   <label class="lbl">Pesan<textarea name="message" rows="4" class="field" required minlength="10"></textarea></label><button class="btn-grad rounded-xl py-3">Kirim Tiket</button></form>
+   <div id="tres" class="mt-4"></div></section>
+  <section class="grid gap-6 content-start"><div class="glass rounded-2xl p-6"><h2 class="text-xl font-semibold mb-4">Lacak tiket</h2>
+   <form id="lf" class="grid sm:grid-cols-[1fr_1fr_auto] gap-3"><input name="code" class="field" placeholder="Kode tiket (TK...)" required><input name="contact" class="field" placeholder="Email / WA saat kirim" required><button class="btn-grad rounded-xl px-5">Cari</button></form><div id="lres" class="mt-4 grid gap-3"></div></div>
+   <div id="mine" class="hidden glass rounded-2xl p-6"><h2 class="text-xl font-semibold mb-4">Tiket saya</h2><div id="mlist" class="grid gap-3"></div></div></section></div>
+ <section id="faq" class="mt-14 max-w-3xl mx-auto"><h2 class="text-2xl font-bold mb-4 text-center">FAQ</h2><input id="fq" class="field mb-4" placeholder="Cari pertanyaan..."><div id="faqs" class="grid gap-3"></div></section>
+</main>
+<div id="site-footer"></div><script type="module" src="/js/pages/cs.js"></script></body></html>

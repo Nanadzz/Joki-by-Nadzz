@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masuk & Daftar — Nadzz Joki</title><meta name="description" content="Masuk atau daftar sebagai pelanggan maupun worker Nadzz Joki.">
+<meta name="theme-color" content="#02040a"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/nadzzjoki.png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script><script src="/js/tailwind.config.js"></script><link rel="stylesheet" href="/css/theme.css"><link rel="stylesheet" href="/css/fx.css">
+</head><body class="min-h-screen"><div id="site-header"></div>
+<main class="mx-auto max-w-5xl px-5 py-12 grid md:grid-cols-2 gap-10 items-center">
+ <div class="hidden md:block text-center"><img src="/assets/nadzzjoki.png" alt="Logo" class="w-72 h-72 mx-auto rounded-full glow animate-float"><h2 class="text-2xl font-bold mt-8 mb-2">Satu akun, <span class="grad-text">semua layanan</span></h2><p class="text-slate-400 text-sm max-w-xs mx-auto">Kelola pesanan, tiket bantuan, dan dashboard worker dari satu tempat.</p></div>
+ <div class="glass rounded-3xl p-7 md:p-9"><div class="flex gap-2 mb-6"><button id="t1" class="tab on flex-1">Masuk</button><button id="t2" class="tab flex-1">Daftar</button></div>
+ <h1 id="ttl" class="text-2xl font-bold mb-1">Selamat datang kembali</h1><p id="sub" class="text-slate-400 text-sm mb-6">Masuk untuk melanjutkan pesananmu.</p>
+ <form id="f" class="grid gap-4" novalidate>
+  <label class="lbl">Email<input name="email" type="email" class="field" placeholder="nama@email.com" required autocomplete="email"></label>
+  <label class="lbl">Kata sandi<div class="relative"><input name="password" id="pw" type="password" class="field pr-16" minlength="8" required autocomplete="current-password"><button type="button" id="eye" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cy">Lihat</button></div></label>
+  <div id="reg" class="hidden gap-4 grid">
+   <label class="lbl">Nama tampilan<input name="displayName" class="field" maxlength="40"></label>
+   <label class="lbl">Daftar sebagai<select name="role" id="role" class="field"><option value="CUSTOMER">Pelanggan</option><option value="BOOSTER">Worker (penjoki)</option></select></label>
+   <div id="wkf" class="hidden gap-4 grid"><label class="lbl">Nomor WhatsApp (opsional, tampil di halaman Worker)<input name="whatsapp" class="field" placeholder="08xxxxxxxxxx"></label>
+   <div class="lbl">Skill (game yang dikuasai)<div id="skills" class="flex flex-wrap gap-2"></div></div></div></div>
+  <p id="msg" class="text-sm text-red-400 hidden"></p>
+  <button id="sb" class="btn-grad rounded-xl py-3">Masuk</button></form></div>
+</main>
+<div id="site-footer"></div><script type="module" src="/js/pages/login.js"></script></body></html>

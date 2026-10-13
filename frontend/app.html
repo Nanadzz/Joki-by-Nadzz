@@ -109,6 +109,14 @@ async order(id){if(S?.user.role!=='CUSTOMER'){toast('Masuk sebagai pelanggan unt
  $('#f').onsubmit=async e=>{e.preventDefault();const b=fd(e.target);b.serviceId=id;
   try{await api('/orders',{body:b,headers:{'Idempotency-Key':key}});toast('Pesanan dibuat — lanjutkan pembayaran');location.hash='#/orders';if(dp){setTimeout(()=>{dp.prompt();dp=null},800)}}catch(x){toast(x.message)}}},
 
+async akun(){if(!S)return location.href='/login.html';
+ view.innerHTML=`<h2>Akun Saya</h2><p class="mu" style="margin-bottom:16px">${esc(S.user.displayName)} · ${esc(S.user.email)}</p><div class="card" style="max-width:520px"><h3>Ganti kata sandi</h3><form id="cp" style="margin-top:14px">
+  <label>Sandi saat ini<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+  <label>Sandi baru (min. 8 karakter)<input name="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+  <label>Ulangi sandi baru<input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
+  <button class="btn">Simpan sandi</button></form></div>`;
+ $('#cp').onsubmit=async e=>{e.preventDefault();const f=fd(e.target);if(f.newPassword!==f.confirm)return toast('Ulangi sandi baru tidak sama');
+  try{setS(await P('/auth/change-password',{currentPassword:f.currentPassword,newPassword:f.newPassword}));e.target.reset();toast('Sandi berhasil diganti')}catch(x){toast(x.message)}}},
 async orders(){if(!S)return location.href='/login.html';const l=await api('/orders');
  view.innerHTML=`<h2>Pesanan Saya</h2><div class="grid">${l.map(o=>`<div class="card"><div class="row"><h3>${o.title}</h3>${bd(o.status)}</div><p class="mu" style="font-size:13px">${o.code} · ${o.gameName}</p>${bar(o)}
  <div class="row"><span>${rp(o.paidAmount)} / ${rp(o.totalAmount)}</span></div>
@@ -157,7 +165,7 @@ async admin(tab='laporan'){if(S?.user.role!=='ADMIN')return location.href='/logi
  view.querySelectorAll('[data-b]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.b,{method:'PUT',body:{sharePercentage:i.value}}).then(()=>toast('Komisi diperbarui')).catch(x=>toast(x.message)))}
 };
 function nav(){const r=S?.user.role,L=[['/index.html','Beranda'],['/pricelist.html','Pricelist'],['/pesan.html','Pesan'],['/worker.html','Worker'],['/cs.html','Customer Service'],['/track.html','Cek Transaksi']];
- if(r==='CUSTOMER')L.push(['#/orders','Pesanan Saya']);if(r==='BOOSTER')L.push(['#/booster','Dashboard']);if(r==='ADMIN')L.push(['#/admin','Admin']);
+ if(r==='CUSTOMER')L.push(['#/orders','Pesanan Saya']);if(r==='BOOSTER')L.push(['#/booster','Dashboard']);if(r==='ADMIN')L.push(['#/admin','Admin']);if(r)L.push(['#/akun','Akun']);
  $('#nav').innerHTML=L.map(([h,t])=>`<a href="${h}" class="${location.hash===h||(!location.hash&&h==='#/')?'on':''}">${t}</a>`).join('')+(S?`<a href="#" onclick="ACT.logout();return false">Keluar (${esc(S.user.displayName)})</a>`:'<a href="/login.html">Masuk / Daftar</a>')}
 function route(){clearInterval(timer);const[p,a]=location.hash.replace(/^#\/?/,'').split('/');if(!p)return location.replace(S?({ADMIN:'#/admin',BOOSTER:'#/booster'}[S.user.role]||'#/orders'):'/index.html');nav();(R[p||'home']||R.home)(a).catch(e=>view.innerHTML=`<p class="err">${e.message}</p>`)}
 addEventListener('hashchange',route);route();
