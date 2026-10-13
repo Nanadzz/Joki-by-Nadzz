@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://GANTI-DENGAN-URL-BACKEND/api/:path*" }
+    { "source": "/api/:path*", "destination": "https://dc13274f8fc60f64a0795044fbd07c68db94b364764fd9a7736db6e52842f5b8/api/:path*" }
   ]
 }
