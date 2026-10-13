@@ -12,7 +12,7 @@ backend/server.js (API) · backend/catalog.js (katalog harga default) · fronten
 
 ## Deploy (VPS)
 1. `docker compose up -d --build` dengan env produksi (`NODE_ENV=production`, `JWT_SECRET`, `ENC_KEY`, `GATEWAY_SECRET`, `TRUST_PROXY=1`). Server menolak start di production bila secret belum diisi.
-2. Pasang nginx/Caddy sebagai reverse proxy ke port 3000 dan aktifkan HTTPS (Let's Encrypt / Cloudflare).
+2. nginx/Caddy sebagai reverse proxy ke port 3000 dan aktifkan HTTPS (Let's Encrypt / Cloudflare).
 3. Mode production mematikan pembayaran simulasi: sambungkan payment gateway nyata (Midtrans/Xendit/dll.) ke `POST /api/payments/webhook` (signature HMAC-SHA256 header `x-signature`, kunci idempoten `transactionId`).
 
 ## Harga & katalog
