@@ -1,8 +1,9 @@
 {
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "",
+  "outputDirectory": "frontend",
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://joki-by-nadzz-production.up.railway.app/api/:path*"
-    }
+    { "source": "/api/:path*", "destination": "https://joki-by-nadzz-production.up.railway.app/api/:path*" }
   ]
 }
