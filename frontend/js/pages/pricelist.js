@@ -5,11 +5,25 @@ mountLayout('pricelist');
 
 // Tampilan per game (hanya warna & teks; nama game harus sama persis dengan di katalog/skill worker)
 const THEMES={
- 'Genshin Impact':{ini:'GI',c1:'#f7d27a',c2:'#e58a3b',blurb:'Joki Spiral Abyss, Imaginarium Theater, serta rawat akun harian sampai bulanan.'},
- 'Mobile Legends':{ini:'ML',c1:'#5db0ff',c2:'#3b5bdb',blurb:'Joki rank per bintang atau paket naik tier. Hero dikerjakan sesuai permintaanmu.'},
- 'Honkai Star Rail':{ini:'HSR',c1:'#d2a2ff',c2:'#7a63ff',blurb:'Joki Memory of Chaos, Pure Fiction, Apocalyptic Shadow, dan rawat akun.'}};
+ 'Genshin Impact':{ini:'GI',c1:'#f7d27a',c2:'#e58a3b',icon:'/assets/games/genshin.webp',banner:'/assets/games/banner_genshin7.1.webp',blurb:'Joki Spiral Abyss, Imaginarium Theater, serta rawat akun harian sampai bulanan.'},
+ 'Mobile Legends':{ini:'ML',c1:'#5db0ff',c2:'#3b5bdb',icon:'/assets/games/ml.webp',banner:'/assets/games/banner_laylacl.webp',blurb:'Joki rank per bintang atau paket naik tier. Hero dikerjakan sesuai permintaanmu.'},
+ 'Honkai Star Rail':{ini:'HSR',c1:'#d2a2ff',c2:'#7a63ff',icon:'/assets/games/hsr.webp',banner:'/assets/games/banner_pearl.webp',blurb:'Joki Memory of Chaos, Pure Fiction, Apocalyptic Shadow, dan rawat akun.'}};
 const themeOf=n=>THEMES[n]||{ini:String(n).split(/\s+/).map(w=>w[0]).join('').slice(0,3).toUpperCase(),c1:'#2de2e6',c2:'#b66dff',blurb:`Layanan joki ${n}.`};
 const UNIT={paket:{ic:'📦',per:''},bintang:{ic:'⭐',per:'/ bintang'},hari:{ic:'📅',per:'/ hari'}};
+// Ikon item per SKU → nama file di /assets/items/. SKU yang tidak ada di sini memakai emoji bawaan.
+// Untuk mengganti ikon: ubah nama file di sini (atau timpa file-nya dengan NAMA BARU agar cache tidak bentrok).
+const ITEM_ICON={
+ // Genshin Impact
+ 'gi-abyss-full':'Item_Primogem.webp','gi-abyss-9-10':'Item_Primogem.webp','gi-abyss-11':'Item_Primogem.webp','gi-abyss-12':'Item_Primogem.webp',
+ 'gi-theater-easy':'System_Imaginarium_Theater.webp','gi-theater-normal':'System_Imaginarium_Theater.webp','gi-theater-hard':'System_Imaginarium_Theater.webp','gi-theater-visionary':'imaginarium-achievement-icon.webp',
+ 'gi-daily':'Icon_World_Quest.webp','gi-resin':'Item_Condensed_Resin.webp',
+ 'gi-weekly-2':'Icon_World_Quest.webp','gi-weekly-1':'Item_Condensed_Resin.webp','gi-monthly-1':'Icon_World_Quest.webp','gi-monthly-2':'Item_Condensed_Resin.webp',
+ // Mobile Legends
+ 'ml-epic':'Epic.webp','ml-legend':'Legend.webp','ml-mythic':'Mythic.webp','ml-honor':'Mythical_Honor.webp','ml-glory':'Mythical_Glory.webp','ml-immortal':'Mythical_Immortal.webp',
+ 'ml-epic-legend':'Legend.webp','ml-legend-mythic':'Mythic.webp','ml-epic-mythic':'Mythic.webp','ml-gm-mythic':'Grandmaster.webp',
+ // Honkai: Star Rail
+ 'hsr-moc':'Item_Stellar_Jade.webp','hsr-pf':'Light_Cone_A_Thankless_Coronation_Icon.webp','hsr-as':'Light_Cone_For_Tomorrows_Journey_Icon.webp',
+ 'hsr-endgame3':'Item_Star_Rail_Special_Pass.webp','hsr-daily':'Item_Stellar_Jade.webp','hsr-weekly':'Light_Cone_A_Dream_Scented_in_Wheat_Icon.webp','hsr-monthly':'Item_Star_Rail_Special_Pass.webp'};
 const slug=n=>String(n).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 const fmtH=h=>h<1?`${Math.max(1,Math.round(h*60))} mnt`:`${+(+h).toFixed(1)} jam`;
 
@@ -21,13 +35,13 @@ const total=()=>st.svc?Math.round(st.svc.basePrice*st.qty*(st.svc.tiers?.[st.tie
 function renderGames(){
  $('#games').innerHTML=st.games.map((g,i)=>{const t=themeOf(g.gameName),min=Math.min(...g.services.map(s=>s.basePrice));
   return `<button type="button" class="pl-game ${i===st.g?'on':''}" data-act="game" data-i="${i}" aria-pressed="${i===st.g}" style="--c1:${t.c1};--c2:${t.c2}">
-   <span class="pl-emb">${esc(t.ini)}</span><span><span class="pl-gn">${esc(g.gameName)}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
+   ${t.icon?`<img class="pl-emb" src="${t.icon}" alt="" loading="lazy">`:`<span class="pl-emb">${esc(t.ini)}</span>`}<span><span class="pl-gn">${esc(g.gameName)}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
 
 function renderInfo(){
  const g=cur(),t=themeOf(g.gameName),min=Math.min(...g.services.map(s=>s.basePrice)),
   wa=st.wa?waLink(st.wa,`Halo Admin ${st.brand}, saya ingin bertanya soal pricelist joki ${g.gameName}.`):'/cs.html';
  $('#info').setAttribute('style',`--c1:${t.c1};--c2:${t.c2}`);
- $('#info').innerHTML=`<div class="pl-cover" data-ini="${esc(t.ini)}"></div><div class="pl-ib">
+ $('#info').innerHTML=`<div class="pl-cover ${t.banner?'has-img':''}" data-ini="${esc(t.ini)}" ${t.banner?`style="background-image:url('${t.banner}')"`:''}></div><div class="pl-ib">
   <div class="pl-gname">${esc(g.gameName)}</div><div class="pl-from">Mulai dari <b>${rp(min)}</b></div><p class="pl-blurb">${esc(t.blurb)}</p>
   <ul class="pl-feat"><li><span>🔐</span><span>Kredensial dienkripsi dan dihapus setelah pesanan selesai</span></li><li><span>📈</span><span>Progres bisa dilacak dengan kode pesanan</span></li><li><span>🛟</span><span>Sengketa dan refund ditangani admin</span></li></ul>
   <div class="pl-how"><h3>Cara pesan</h3><ol><li>Pilih paket dan atur jumlah</li><li>Isi UID, server, dan data akun</li><li>Bayar lunas, lalu pantau progres</li></ol></div>
@@ -42,7 +56,7 @@ function renderSections(){
  h+=`<section class="pl-sec">${head('Pilih paket',`${list.length} pilihan di kategori ${esc(st.cat)}`)}<div class="pl-grid">${list.map(x=>{
   const u=UNIT[x.unit]||UNIT.paket,on=s?.id===x.id,cls=/populer/i.test(x.badge)?'hot':/hemat/i.test(x.badge)?'save':'';
   return `<button type="button" class="pl-item ${on?'on':''}" data-act="svc" data-id="${esc(x.id)}" aria-pressed="${on}" title="${esc(x.description)}">
-   <span class="pl-r1"><span class="pl-ic">${u.ic}</span>${x.badge?`<span class="pl-tag ${cls}">${esc(x.badge)}</span>`:''}</span>
+   <span class="pl-r1"><span class="pl-ic">${ITEM_ICON[x.sku]?`<img src="/assets/items/${ITEM_ICON[x.sku]}" alt="" loading="lazy">`:u.ic}</span>${x.badge?`<span class="pl-tag ${cls}">${esc(x.badge)}</span>`:''}</span>
    <span class="pl-t">${esc(x.title)}</span><span class="pl-d">${esc(x.description)}</span>
    <span class="pl-foot"><span class="pl-p">${rp(x.basePrice)}<small>${u.per}</small></span><span class="pl-e">±${fmtH(x.estimatedHours)}${x.unit==='paket'?'':' / '+esc(x.unit)}</span></span></button>`}).join('')}</div></section>`;
  if(s){

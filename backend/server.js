@@ -228,3 +228,17 @@ app.post('/api/admin/tickets/:id/reply',adm,h(req=>{const t=db.tickets.find(x=>x
 app.use((req,res)=>req.path.startsWith('/api/')?res.status(404).json({error:'Endpoint tidak ditemukan'}):res.status(404).sendFile(path.join(FRONT,'404.html')));
 app.use((e,req,res,next)=>res.status(e.status||500).json({error:e.status===400?'Permintaan tidak valid':'Kesalahan server'}));
 app.listen(process.env.PORT||3000,()=>console.log('Nadzz Joki berjalan di http://localhost:'+(process.env.PORT||3000)));
+
+const syncJsonWithDb = async (updatedData) => {
+    try {
+        // Memperbarui state memory 'db' di Node.js dengan data terbaru
+        if (updatedData) {
+            db.orders = updatedData; 
+        }
+        // Menuliskan perubahan ke data.json menggunakan fungsi bawaan Anda
+        save(); 
+        console.log('🔄 File data.json berhasil disinkronkan!');
+    } catch (error) {
+        console.error('❌ Gagal sinkronisasi ke data.json:', error);
+    }
+};
