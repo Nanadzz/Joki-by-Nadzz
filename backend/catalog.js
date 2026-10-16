@@ -1,15 +1,3 @@
-// Katalog harga default Nadzz Joki — acuan harga pasaran (Oktober 2026), dalam Rupiah (bilangan bulat).
-// Setiap item punya `sku` tetap: saat server menyala, item yang belum ada di data.json ditambahkan,
-// sedangkan harga yang sudah kamu ubah lewat Dashboard Admin TIDAK ditimpa.
-//
-// Sumber acuan (cek ulang secara berkala, harga joki bergerak mengikuti pasar):
-//  - Mobile Legends : Lapakgaming (pricelist joki MLBB, diperbarui 30 Jul 2026)
-//  - Genshin Impact : pricelist joki Genshin (carrd.co, toko joki Indonesia)
-//  - Honkai Star Rail: Sandi Jaya Store (rawat akun weekly/monthly); harga endgame (MoC/PF/AS) dan
-//                      rawat akun harian = ESTIMASI dari pasar lokal + FunPay, belum ada pricelist lokal resmi.
-// Nama game WAJIB sama persis dengan skill worker ('Genshin Impact', 'Mobile Legends', 'Honkai Star Rail'),
-// karena penugasan otomatis mencocokkan keduanya.
-
 const GI = 'Genshin Impact', ML = 'Mobile Legends', HSR = 'Honkai Star Rail';
 
 // item(sku, game, kategori, judul, deskripsi, harga, opsi)
