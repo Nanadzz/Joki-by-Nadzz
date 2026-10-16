@@ -23,18 +23,24 @@ const tiersFor=u=>u==='hari'?{standard:1}:{standard:1,express:1.5}; // akun hari
 const svc=(o={})=>{const unit=o.unit||'paket';return{id:uid(),sku:o.sku||null,gameName:o.gameName||'',category:o.category||'Lainnya',title:o.title||'',description:o.description||'',basePrice:o.basePrice||0,
  unit,minQty:1,maxQty:unit==='paket'?1:(o.maxQty||100),tiers:tiersFor(unit),estimatedHours:o.estimatedHours||1,badge:o.badge||'',sort:o.sort??1000,commissionPct:null,active:true}};
 const seed=()=>{const b=uid();return{
- users:[{id:uid(),email:'admin@chaa.id',passwordHash:hashPw('admin123'),role:'ADMIN',displayName:'Admin Chaa'},
-        {id:b,email:'booster@chaa.id',passwordHash:hashPw('booster123'),role:'BOOSTER',displayName:'Booster Demo'}],
- boosters:[{userId:b,skills:['Genshin Impact','Honkai Star Rail','Mobile Legends'],maxConcurrentOrders:3,sharePercentage:null,rating:5,active:true,lastAssignedAt:0,availability:[],whatsapp:'6281234567890',bio:'Spesialis Genshin & Star Rail, pengerjaan rapi dan komunikatif.',showWhatsapp:true}],
+ users:[{id:uid(),email:'admin@nadzz.com',passwordHash:hashPw(process.env.ADMIN_PASSWORD||'admin123'),role:'ADMIN',displayName:'Admin Nadzz'},
+        {id:b,email:'worker@nadzz.com',passwordHash:hashPw(process.env.WORKER_PASSWORD||'booster123'),role:'BOOSTER',displayName:'PENJOKI NADZZ'}],
+ boosters:[{userId:b,skills:['Genshin Impact','Honkai Star Rail','Mobile Legends'],maxConcurrentOrders:3,sharePercentage:null,rating:5,active:true,lastAssignedAt:0,availability:[],whatsapp:'6289501350962',bio:'Spesialis Genshin & Star Rail, pengerjaan cepat, rapi dan komunikatif.',showWhatsapp:true}],
  services:[], // diisi dari backend/catalog.js oleh sinkronisasi katalog di bawah
  settings:{commissionPct:20,assignMode:'auto',assignTimeoutMin:15,autoConfirmHours:24,gatewayFeeBp:70},
  orders:[],ledger:[],payouts:[],txs:{},idem:{},refresh:{}}};
 let db=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):seed();
 const cleanWa=n=>String(n||'').replace(/\D/g,'').replace(/^0/,'62');
+const cleanName=n=>{const t=String(n??'').trim().replace(/\s+/g,' ').slice(0,60);if(t.length<2)throw err(400,'Nama minimal 2 karakter');return t};
+const checkWa=n=>{const w=cleanWa(n);if(w&&!/^\d{9,15}$/.test(w))throw err(400,'Nomor WhatsApp tidak valid (contoh: 08123456789)');return w};
+const cleanSkills=a=>{const games=[...new Set(db.services.map(s=>s.gameName))],sk=[...new Set((Array.isArray(a)?a:[]).filter(x=>games.includes(x)))];if(!sk.length)throw err(400,'Pilih minimal satu game');return sk};
 // migrasi data lama + nilai bawaan
 db.tickets=db.tickets||[];db.settings={adminWhatsapp:'6285656317710',brand:'Nadzz Joki',...db.settings};
 if(db.settings.adminWhatsapp==='6281234567890')db.settings.adminWhatsapp='6285656317710'; // migrasi: ganti nomor demo lama di data.json yang sudah ada
-db.boosters.forEach(b=>{b.whatsapp=b.whatsapp||'';b.bio=b.bio||'';b.showWhatsapp=!!b.showWhatsapp});
+db.boosters.forEach(b=>{b.whatsapp=cleanWa(b.whatsapp);b.bio=b.bio||'';b.showWhatsapp=!!b.showWhatsapp});
+db.settings.adminWhatsapp=cleanWa(db.settings.adminWhatsapp);
+// migrasi: data.json yang diedit manual — role "WORKER" disamakan jadi "BOOSTER" (nama role di kode), email huruf kecil, nama tidak boleh kosong
+db.users.forEach(u=>{u.email=String(u.email||'').trim().toLowerCase();const r=String(u.role||'CUSTOMER').toUpperCase();u.role=r==='WORKER'?'BOOSTER':r;u.displayName=String(u.displayName||'').trim()||u.email.split('@')[0]});
 // migrasi: sistem DP dihapus — buang pengaturannya agar tidak muncul lagi di panel admin (data lama tetap aman)
 delete db.settings.dpPct;delete db.settings.reservationHours;
 // migrasi katalog: lengkapi field layanan lama, nonaktifkan 4 layanan demo bawaan, tambah item katalog yang belum ada (berdasarkan sku)
@@ -102,6 +108,7 @@ setInterval(()=>{const t=now(),S=db.settings;
 const app=express(),FRONT=path.join(__dirname,'../frontend');
 app.disable('x-powered-by');if(process.env.TRUST_PROXY)app.set('trust proxy',1);
 app.use((req,res,next)=>{res.set({'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'});next()});
+app.use('/api',(req,res,next)=>{res.set('Cache-Control','no-store');next()}); // data worker/akun selalu segar, jangan di-cache browser/CDN
 app.use(express.json({limit:'100kb',verify:(req,_,buf)=>{req.raw=buf}}));
 app.use(express.static(FRONT,{extensions:['html']})); // /pesan -> pesan.html
 const hits={},limit=(max,win=9e5)=>(req,res,next)=>{const k=req.path+req.ip,t=now(),a=hits[k]=(hits[k]||[]).filter(x=>t-x<win);if(a.length>=max)return res.status(429).json({error:'Terlalu banyak percobaan, coba lagi nanti'});a.push(t);next()};
@@ -184,6 +191,14 @@ app.get('/api/booster/orders/:id/credentials',auth('BOOSTER'),h(req=>{const o=bo
 app.post('/api/booster/payouts',auth('BOOSTER'),h(req=>{const a=Math.floor(+req.body.amount);if(!(a>0)||a>balance(req.user.sub))throw err(400,'Saldo tidak cukup');
  const p={id:uid(),boosterId:req.user.sub,amount:a,status:'PENDING',requestedAt:now()};db.payouts.push(p);return p}));
 
+// Profil akun (semua role): ganti nama tampilan & email tanpa edit data.json
+const uview=u=>({id:u.id,email:u.email,role:u.role,displayName:u.displayName});
+app.get('/api/auth/me',auth(),h(req=>uview(db.users.find(x=>x.id===req.user.sub)||nf())));
+app.put('/api/auth/profile',auth(),limit(30),h(req=>{const u=db.users.find(x=>x.id===req.user.sub)||nf(),r=req.body;
+ const name='displayName'in r?cleanName(r.displayName):u.displayName;let email=u.email;
+ if('email'in r){email=String(r.email||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw err(400,'Format email tidak valid');if(db.users.some(x=>x.id!==u.id&&x.email===email))throw err(409,'Email sudah dipakai akun lain')}
+ u.displayName=name;u.email=email;return{user:uview(u)}}));
+
 // Admin
 const adm=auth('ADMIN');
 app.get('/api/admin/data',adm,h(()=>({settings:db.settings,services:db.services,orders:db.orders.map(view).reverse(),boosters:db.boosters.map(bv),payouts:db.payouts,report:rep(),ledger:db.ledger.slice(-50).reverse(),tickets:db.tickets.slice().reverse()})));
@@ -198,7 +213,9 @@ app.post('/api/admin/services',adm,h(req=>{const b=req.body,s=b.id?db.services.f
   badge:b.badge!==undefined?String(b.badge).slice(0,20):s.badge,active:b.active??s.active});
  s.maxQty=s.unit==='paket'?1:Math.min(500,Math.max(1,Math.floor(num(b.maxQty,s.maxQty>1?s.maxQty:100))));s.tiers=tiersFor(s.unit);
  if('commissionPct'in b)s.commissionPct=b.commissionPct===''||b.commissionPct==null?null:+b.commissionPct;return s}));
-app.put('/api/admin/boosters/:id',adm,h(req=>{const b=db.boosters.find(x=>x.userId===req.params.id)||nf(),r=req.body;
+app.put('/api/admin/boosters/:id',adm,h(req=>{const b=db.boosters.find(x=>x.userId===req.params.id)||nf(),r=req.body,u=db.users.find(x=>x.id===b.userId)||nf();
+ const name='displayName'in r?cleanName(r.displayName):null,wa='whatsapp'in r?checkWa(r.whatsapp):null,sk='skills'in r?cleanSkills(r.skills):null; // validasi dulu, baru ubah data
+ if(name)u.displayName=name;if(wa!==null){b.whatsapp=wa;if(!wa)b.showWhatsapp=false}if(sk)b.skills=sk;if('bio'in r)b.bio=String(r.bio).slice(0,300);if('showWhatsapp'in r)b.showWhatsapp=!!r.showWhatsapp&&!!b.whatsapp;
  if('sharePercentage'in r)b.sharePercentage=r.sharePercentage===''||r.sharePercentage==null?null:+r.sharePercentage;if('active'in r){b.active=!!r.active;if(b.active)dispatch()}return bv(b)}));
 app.post('/api/admin/orders/:id/assign',adm,h(req=>{const o=db.orders.find(x=>x.id===req.params.id)||nf(),b=db.boosters.find(x=>x.userId===req.body.boosterId)||nf();assign(o,b);return view(o)}));
 app.post('/api/admin/orders/:id/resolve',adm,h(req=>{const o=db.orders.find(x=>x.id===req.params.id)||nf();
@@ -211,9 +228,11 @@ app.post('/api/admin/expenses',adm,h(req=>{const a=Math.floor(+req.body.amount);
 // ===== Konfigurasi publik, info worker (WhatsApp), customer service =====
 const wk=o=>{const b=db.boosters.find(x=>x.userId===o.boosterId);return b&&['IN_PROGRESS','COMPLETED'].includes(o.status)?{displayName:db.users.find(u=>u.id===b.userId)?.displayName,whatsapp:b.showWhatsapp&&b.whatsapp?b.whatsapp:null}:null}; // WA worker baru terlihat pelanggan saat order aktif
 app.get('/api/config',h(()=>({brand:db.settings.brand,adminWhatsapp:db.settings.adminWhatsapp})));
-app.get('/api/workers',h(()=>db.boosters.filter(b=>b.active).map(b=>({id:b.userId,displayName:db.users.find(u=>u.id===b.userId)?.displayName,skills:b.skills,rating:b.rating,bio:b.bio,
+app.get('/api/workers',h(()=>db.boosters.filter(b=>b.active&&db.users.some(u=>u.id===b.userId)).map(b=>({id:b.userId,displayName:db.users.find(u=>u.id===b.userId)?.displayName,skills:b.skills,rating:b.rating,bio:b.bio,
  done:db.orders.filter(o=>o.boosterId===b.userId&&o.status==='VERIFIED').length,available:load(b)<b.maxConcurrentOrders&&inSlot(b),whatsapp:b.showWhatsapp&&b.whatsapp?b.whatsapp:null}))));
-app.put('/api/booster/profile',auth('BOOSTER'),h(req=>{const b=me(req),r=req.body;if('whatsapp'in r)b.whatsapp=cleanWa(r.whatsapp);if('bio'in r)b.bio=String(r.bio).slice(0,300);if('showWhatsapp'in r)b.showWhatsapp=!!r.showWhatsapp&&!!b.whatsapp;return bv(b)}));
+app.put('/api/booster/profile',auth('BOOSTER'),h(req=>{const b=me(req),r=req.body,u=db.users.find(x=>x.id===b.userId)||nf();
+ const name='displayName'in r?cleanName(r.displayName):null,wa='whatsapp'in r?checkWa(r.whatsapp):null; // validasi dulu, baru ubah data
+ if(name)u.displayName=name;if(wa!==null)b.whatsapp=wa;if('bio'in r)b.bio=String(r.bio).slice(0,300);if('showWhatsapp'in r)b.showWhatsapp=!!r.showWhatsapp;if(!b.whatsapp)b.showWhatsapp=false;return bv(b)}));
 const rl={},tview=t=>({code:t.code,subject:t.subject,message:t.message,orderCode:t.orderCode,status:t.status,replies:t.replies,createdAt:t.createdAt});
 app.post('/api/support/tickets',h(req=>{const k=req.ip+new Date().toISOString().slice(0,13);rl[k]=(rl[k]||0)+1;if(rl[k]>5)throw err(429,'Terlalu banyak tiket, coba lagi nanti');
  const{name,contact,orderCode,subject,message}=req.body;if(!name||!contact||!subject||String(message||'').length<10)throw err(400,'Lengkapi nama, kontak, subjek, dan pesan (min. 10 karakter)');
