@@ -69,7 +69,7 @@
 .pl-tag.hot{background:rgba(255,170,40,.15);color:#ffc14d}
 .pl-tag.save{background:rgba(52,211,153,.14);color:#6ee7b7}
 .pl-t{font-weight:600;font-size:.9rem;line-height:1.3}
-.pl-d{font-size:.75rem;color:var(--pl-mut);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pl-d{font-size:.75rem;color:var(--pl-mut);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pl-foot{margin-top:auto;padding-top:10px;border-top:1px dashed var(--pl-line);display:flex;align-items:baseline;justify-content:space-between;gap:6px}
 .pl-p{font-family:Sora,sans-serif;font-weight:700;font-size:1.02rem;color:#fff}
 .pl-p small{font-family:Manrope,sans-serif;font-weight:500;font-size:.7rem;color:var(--pl-mut);margin-left:3px}
@@ -81,7 +81,7 @@
 .pl-qty{display:inline-flex;align-items:center;border:1.5px solid var(--pl-line);border-radius:12px;overflow:hidden;background:var(--pl-item)}
 .pl-qty button{width:40px;height:42px;font-size:1.2rem;color:var(--cy);cursor:pointer;background:transparent;border:0}
 .pl-qty button:hover{background:rgba(45,226,230,.1)}
-.pl-qty input{width:72px;height:42px;text-align:center;background:transparent;border:0;color:#fff;font:inherit;font-weight:700;-moz-appearance:textfield}
+.pl-qty input{width:72px;height:42px;text-align:center;background:transparent;border:0;color:#fff;font:inherit;font-weight:700;-moz-appearance:textfield;appearance:textfield;appearance:textfield}
 .pl-qty input::-webkit-outer-spin-button,.pl-qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .pl-qty input:focus{outline:0}
 .pl-seg{display:inline-flex;border:1.5px solid var(--pl-line);border-radius:12px;padding:3px;background:var(--pl-item)}
