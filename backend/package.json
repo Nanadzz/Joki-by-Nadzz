@@ -1,9 +1,1 @@
-{"name":"nadzz-joki backend","version":"1.0.0","description":"Nadzz Joki - platform yang menyediakan jasa joki game favoritmu","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"compression":"^1.8.2","express":"^4.19.2"}}
-{
-  "name": "backend",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
-  }
-}
+{"name":"nadzz-joki backend","version":"1.0.0","description":"Nadzz Joki - platform yang menyediakan jasa joki game favoritmu","main":"server.js", "dev": "node server.js","scripts":{"start":"node server.js"},"dependencies":{"compression":"^1.8.2","express":"^4.19.2"}}
