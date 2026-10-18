@@ -24,21 +24,20 @@ const svc=(o={})=>{const unit=o.unit||'paket';return{id:uid(),sku:o.sku||null,ga
  unit,minQty:1,maxQty:unit==='paket'?1:(o.maxQty||100),tiers:tiersFor(unit),estimatedHours:o.estimatedHours||1,badge:o.badge||'',sort:o.sort??1000,commissionPct:null,active:true,image:'',imageAt:0}};
 const seed=()=>{const b=uid();return{
  users:[{id:uid(),email:'admin@chaa.id',passwordHash:hashPw('admin123'),role:'ADMIN',displayName:'Admin Chaa'},
-        {id:b,email:'booster@chaa.id',passwordHash:hashPw('booster123'),role:'BOOSTER',displayName:'Penjoki Nadzz'}],
- boosters:[{userId:b,skills:['Genshin Impact','Honkai Star Rail','Mobile Legends'],maxConcurrentOrders:3,sharePercentage:null,rating:5,active:true,lastAssignedAt:0,availability:[],whatsapp:'6289501350962',bio:'Spesialis Genshin & Star Rail, pengerjaan rapi dan komunikatif.',showWhatsapp:true,photo:'',photoAt:0}],
+        {id:b,email:'booster@chaa.id',passwordHash:hashPw('booster123'),role:'BOOSTER',displayName:'Booster Demo'}],
+ boosters:[{userId:b,skills:['Genshin Impact','Honkai Star Rail','Mobile Legends'],maxConcurrentOrders:3,sharePercentage:null,rating:5,active:true,lastAssignedAt:0,availability:[],whatsapp:'6281234567890',bio:'Spesialis Genshin & Star Rail, pengerjaan rapi dan komunikatif.',showWhatsapp:true}],
  services:[], // diisi dari backend/catalog.js oleh sinkronisasi katalog di bawah
  settings:{commissionPct:20,assignMode:'auto',assignTimeoutMin:15,autoConfirmHours:24,gatewayFeeBp:70},
  orders:[],ledger:[],payouts:[],txs:{},idem:{},refresh:{}}};
 let db=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):seed();
 const cleanWa=n=>String(n||'').replace(/\D/g,'').replace(/^0/,'62');
+const cleanName=n=>{const t=String(n??'').trim().replace(/\s+/g,' ').slice(0,60);if(t.length<2)throw err(400,'Nama minimal 2 karakter');return t};
+const checkWa=n=>{const w=cleanWa(n);if(w&&!/^\d{9,15}$/.test(w))throw err(400,'Nomor WhatsApp tidak valid (contoh: 08123456789)');return w};
+const cleanSkills=a=>{const games=[...new Set(db.services.map(s=>s.gameName))],sk=[...new Set((Array.isArray(a)?a:[]).filter(x=>games.includes(x)))];if(!sk.length)throw err(400,'Pilih minimal satu game');return sk};
 // migrasi data lama + nilai bawaan
 db.tickets=db.tickets||[];db.settings={adminWhatsapp:'6285656317710',brand:'Nadzz Joki',...db.settings};
 if(db.settings.adminWhatsapp==='6281234567890')db.settings.adminWhatsapp='6285656317710'; // migrasi: ganti nomor demo lama di data.json yang sudah ada
-db.boosters.forEach(b=>{b.whatsapp=b.whatsapp||'';b.bio=b.bio||'';b.showWhatsapp=!!b.showWhatsapp;b.photo=b.photo||'';b.photoAt=b.photoAt||0});
-// migrasi: worker demo lama diganti "Penjoki Nadzz" (nama + nomor WhatsApp 089501350962); role hasil edit manual 'WORKER' dikembalikan ke 'BOOSTER'
-db.users.forEach(u=>{if(u.role==='WORKER')u.role='BOOSTER';
- if(/^(booster demo|penjoki nadzz)$/i.test(u.displayName||'')){u.displayName='Penjoki Nadzz';const b=db.boosters.find(x=>x.userId===u.id);
-  if(b&&(!b.whatsapp||b.whatsapp==='6281234567890'))b.whatsapp=cleanWa('089501350962')}});
+db.boosters.forEach(b=>{b.whatsapp=b.whatsapp||'';b.bio=b.bio||'';b.showWhatsapp=!!b.showWhatsapp});
 // migrasi: sistem DP dihapus — buang pengaturannya agar tidak muncul lagi di panel admin (data lama tetap aman)
 delete db.settings.dpPct;delete db.settings.reservationHours;
 // migrasi katalog: lengkapi field layanan lama, nonaktifkan 4 layanan demo bawaan, tambah item katalog yang belum ada (berdasarkan sku)
@@ -108,11 +107,8 @@ setInterval(()=>{const t=now(),S=db.settings;
 const app=express(),FRONT=path.join(__dirname,'../frontend');
 app.disable('x-powered-by');if(process.env.TRUST_PROXY)app.set('trust proxy',1);
 app.use((req,res,next)=>{res.set({'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'});next()});
-app.use(express.json({limit:'300kb',verify:(req,_,buf)=>{req.raw=buf}}));
-let compression;try{compression=require('compression')}catch{} // opsional: jalankan `npm install` di folder backend
-if(compression)app.use(compression());
-app.use(express.static(FRONT,{extensions:['html'],setHeaders:(res,f)=>{ // /pesan -> pesan.html
- res.setHeader('Cache-Control',/[\\/](assets|icons)[\\/]/.test(f)?'public, max-age=86400, stale-while-revalidate=604800':'no-cache')}})); // gambar di-cache 1 hari; html/js/css selalu divalidasi ETag (murah, 304)
+app.use(express.json({limit:'100kb',verify:(req,_,buf)=>{req.raw=buf}}));
+app.use(express.static(FRONT,{extensions:['html']})); // /pesan -> pesan.html
 const hits={},limit=(max,win=9e5)=>(req,res,next)=>{const k=req.path+req.ip,t=now(),a=hits[k]=(hits[k]||[]).filter(x=>t-x<win);if(a.length>=max)return res.status(429).json({error:'Terlalu banyak percobaan, coba lagi nanti'});a.push(t);next()};
 setInterval(()=>{for(const k in hits)if(!hits[k].length||now()-hits[k].at(-1)>9e5)delete hits[k]},36e5).unref();
 app.get('/api/health',(req,res)=>res.json({ok:true}));
@@ -209,6 +205,14 @@ app.get('/api/booster/orders/:id/credentials',auth('BOOSTER'),h(req=>{const o=bo
 app.post('/api/booster/payouts',auth('BOOSTER'),h(req=>{const a=Math.floor(+req.body.amount);if(!(a>0)||a>balance(req.user.sub))throw err(400,'Saldo tidak cukup');
  const p={id:uid(),boosterId:req.user.sub,amount:a,status:'PENDING',requestedAt:now()};db.payouts.push(p);return p}));
 
+// Profil akun (semua role): ganti nama tampilan & email tanpa edit data.json
+const uview=u=>({id:u.id,email:u.email,role:u.role,displayName:u.displayName});
+app.get('/api/auth/me',auth(),h(req=>uview(db.users.find(x=>x.id===req.user.sub)||nf())));
+app.put('/api/auth/profile',auth(),limit(30),h(req=>{const u=db.users.find(x=>x.id===req.user.sub)||nf(),r=req.body;
+ const name='displayName'in r?cleanName(r.displayName):u.displayName;let email=u.email;
+ if('email'in r){email=String(r.email||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw err(400,'Format email tidak valid');if(db.users.some(x=>x.id!==u.id&&x.email===email))throw err(409,'Email sudah dipakai akun lain')}
+ u.displayName=name;u.email=email;return{user:uview(u)}}));
+
 // Admin
 const adm=auth('ADMIN');
 app.get('/api/admin/data',adm,h(()=>({settings:db.settings,services:db.services.map(pubSvc),games:[...new Set(db.services.map(s=>s.gameName))].map(g=>({gameName:g,...gameArt(g)})),orders:db.orders.map(view).reverse(),boosters:db.boosters.map(bv),payouts:db.payouts,report:rep(),ledger:db.ledger.slice(-50).reverse(),tickets:db.tickets.slice().reverse()})));
@@ -225,19 +229,7 @@ app.post('/api/admin/services',adm,h(req=>{const b=req.body;
   basePrice:Math.max(0,Math.floor(num(b.basePrice,s.basePrice))),estimatedHours:num(b.estimatedHours,s.estimatedHours)||s.estimatedHours,
   badge:b.badge!==undefined?String(b.badge).slice(0,20):s.badge,active:b.active??s.active});
  s.maxQty=s.unit==='paket'?1:Math.min(500,Math.max(1,Math.floor(num(b.maxQty,s.maxQty>1?s.maxQty:100))));s.tiers=tiersFor(s.unit);
- if('commissionPct'in b)s.commissionPct=b.commissionPct===''||b.commissionPct==null?null:+b.commissionPct;
- if('image'in b){s.image=b.image?String(b.image):'';s.imageAt=now()}
- return pubSvc(s)}));
-// hapus item dari katalog (item bawaan dicatat agar tidak muncul lagi saat server restart); riwayat pesanan tetap aman karena menyimpan judul & game sendiri
-app.delete('/api/admin/services/:id',adm,h(req=>{const i=db.services.findIndex(x=>x.id===req.params.id);if(i<0)nf();const[s]=db.services.splice(i,1);
- if(s.sku&&!db.meta.deletedSkus.includes(s.sku))db.meta.deletedSkus.push(s.sku);return{ok:true}}));
-app.post('/api/admin/services-restore',adm,h(()=>{const n=db.meta.deletedSkus.length;db.meta.deletedSkus=[];
- CATALOG.forEach((c,i)=>{if(!db.services.some(s=>s.sku===c.sku))db.services.push(svc({...c,sort:i}))});return{restored:n}}));
-// gambar game (icon 128×128 & banner 800×300) — dipakai di pricelist; kosong = pakai gambar bawaan di /assets/games
-app.post('/api/admin/games',adm,h(req=>{const g=String(req.body.gameName||'').trim();if(!g||!db.services.some(s=>s.gameName===g))throw err(400,'Game tidak ditemukan di katalog');
- const a=db.gameArt[g]=db.gameArt[g]||{};
- for(const[k,max]of[['icon',120000],['banner',230000]])if(k in req.body){const v=req.body[k];if(v){if(!imgOk(String(v),max))throw err(400,'Gambar tidak valid: gunakan webp/jpeg/png');a[k]=String(v)}else a[k]='';a[k+'At']=now()}
- return{gameName:g,...gameArt(g)}}));
+ if('commissionPct'in b)s.commissionPct=b.commissionPct===''||b.commissionPct==null?null:+b.commissionPct;return s}));
 app.put('/api/admin/boosters/:id',adm,h(req=>{const b=db.boosters.find(x=>x.userId===req.params.id)||nf(),r=req.body;
  if('sharePercentage'in r)b.sharePercentage=r.sharePercentage===''||r.sharePercentage==null?null:+r.sharePercentage;if('active'in r){b.active=!!r.active;if(b.active)dispatch()}return bv(b)}));
 app.post('/api/admin/orders/:id/assign',adm,h(req=>{const o=db.orders.find(x=>x.id===req.params.id)||nf(),b=db.boosters.find(x=>x.userId===req.body.boosterId)||nf();assign(o,b);return view(o)}));
@@ -250,18 +242,10 @@ app.post('/api/admin/expenses',adm,h(req=>{const a=Math.floor(+req.body.amount);
 
 // ===== Konfigurasi publik, info worker (WhatsApp), customer service =====
 const wk=o=>{const b=db.boosters.find(x=>x.userId===o.boosterId);return b&&['IN_PROGRESS','COMPLETED'].includes(o.status)?{displayName:db.users.find(u=>u.id===b.userId)?.displayName,whatsapp:b.showWhatsapp&&b.whatsapp?b.whatsapp:null}:null}; // WA worker baru terlihat pelanggan saat order aktif
-app.get('/api/config',cached(()=>({brand:db.settings.brand,adminWhatsapp:db.settings.adminWhatsapp})));
-// foto worker: unggahan disimpan sebagai data URL (webp/jpeg/png) lalu disajikan lewat endpoint terpisah agar daftar worker tetap ringan & bisa di-cache
-const photoOk=p=>{const m=/^data:image\/(webp|jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(p);if(!m||p.length>230000)return false;const x=Buffer.from(m[2].slice(0,24),'base64');
- return m[1]==='webp'?x.subarray(0,4).toString()==='RIFF'&&x.subarray(8,12).toString()==='WEBP':m[1]==='png'?x[0]===0x89&&x.subarray(1,4).toString()==='PNG':x[0]===0xff&&x[1]===0xd8};
-const photoUrl=b=>!b.photo?'':b.photo.startsWith('data:')?`/api/workers/${b.userId}/photo?v=${b.photoAt||0}`:b.photo;
-app.get('/api/workers/:id/photo',(req,res)=>{const b=db.boosters.find(x=>x.userId===req.params.id&&x.active),m=b&&/^data:(image\/[a-z]+);base64,(.+)$/.exec(b.photo||'');
- if(!m)return res.status(404).json({error:'Foto tidak ditemukan'});res.set({'Content-Type':m[1],'Cache-Control':'public, max-age=86400'}).send(Buffer.from(m[2],'base64'))});
-app.get('/api/workers',cached(()=>db.boosters.filter(b=>b.active).map(b=>({id:b.userId,displayName:db.users.find(u=>u.id===b.userId)?.displayName,skills:b.skills,rating:b.rating,bio:b.bio,photo:photoUrl(b),
+app.get('/api/config',h(()=>({brand:db.settings.brand,adminWhatsapp:db.settings.adminWhatsapp})));
+app.get('/api/workers',h(()=>db.boosters.filter(b=>b.active).map(b=>({id:b.userId,displayName:db.users.find(u=>u.id===b.userId)?.displayName,skills:b.skills,rating:b.rating,bio:b.bio,
  done:db.orders.filter(o=>o.boosterId===b.userId&&o.status==='VERIFIED').length,available:load(b)<b.maxConcurrentOrders&&inSlot(b),whatsapp:b.showWhatsapp&&b.whatsapp?b.whatsapp:null}))));
-app.put('/api/booster/profile',auth('BOOSTER'),h(req=>{const b=me(req),r=req.body;if('whatsapp'in r)b.whatsapp=cleanWa(r.whatsapp);if('bio'in r)b.bio=String(r.bio).slice(0,300);if('showWhatsapp'in r)b.showWhatsapp=!!r.showWhatsapp&&!!b.whatsapp;
- if('photo'in r){if(r.photo){if(!photoOk(String(r.photo)))throw err(400,'Foto tidak valid: gunakan webp/jpeg/png, maks. ±170 KB');b.photo=String(r.photo)}else b.photo='';b.photoAt=now()}
- return bv(b)}));
+app.put('/api/booster/profile',auth('BOOSTER'),h(req=>{const b=me(req),r=req.body;if('whatsapp'in r)b.whatsapp=cleanWa(r.whatsapp);if('bio'in r)b.bio=String(r.bio).slice(0,300);if('showWhatsapp'in r)b.showWhatsapp=!!r.showWhatsapp&&!!b.whatsapp;return bv(b)}));
 const rl={},tview=t=>({code:t.code,subject:t.subject,message:t.message,orderCode:t.orderCode,status:t.status,replies:t.replies,createdAt:t.createdAt});
 app.post('/api/support/tickets',h(req=>{const k=req.ip+new Date().toISOString().slice(0,13);rl[k]=(rl[k]||0)+1;if(rl[k]>5)throw err(429,'Terlalu banyak tiket, coba lagi nanti');
  const{name,contact,orderCode,subject,message}=req.body;if(!name||!contact||!subject||String(message||'').length<10)throw err(400,'Lengkapi nama, kontak, subjek, dan pesan (min. 10 karakter)');
@@ -276,3 +260,17 @@ app.post('/api/admin/tickets/:id/reply',adm,h(req=>{const t=db.tickets.find(x=>x
 app.use((req,res)=>req.path.startsWith('/api/')?res.status(404).json({error:'Endpoint tidak ditemukan'}):res.status(404).sendFile(path.join(FRONT,'404.html')));
 app.use((e,req,res,next)=>res.status(e.status||500).json({error:e.status===400?'Permintaan tidak valid':'Kesalahan server'}));
 app.listen(process.env.PORT||3000,()=>console.log('Nadzz Joki berjalan di http://localhost:'+(process.env.PORT||3000)));
+
+const syncJsonWithDb = async (updatedData) => {
+    try {
+        // Memperbarui state memory 'db' di Node.js dengan data terbaru
+        if (updatedData) {
+            db.orders = updatedData; 
+        }
+        // Menuliskan perubahan ke data.json menggunakan fungsi bawaan Anda
+        save(); 
+        console.log('🔄 File data.json berhasil disinkronkan!');
+    } catch (error) {
+        console.error('❌ Gagal sinkronisasi ke data.json:', error);
+    }
+};
