@@ -109,3 +109,11 @@
 @media(max-width:600px){.pl-bar{flex-wrap:wrap;bottom:10px}.pl-bx{width:100%;justify-content:space-between}.pl-grid{grid-template-columns:1fr 1fr;gap:10px}.pl-item{padding:12px;min-height:150px}}
 @media(max-width:380px){.pl-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.pl-game,.pl-item,.pl-skel{transition:none;animation:none}}
+
+/* === Gambar ikon game, banner game, dan ikon item === */
+img.pl-emb{object-fit:cover;background:none;display:block}
+.pl-cover.has-img{height:160px;background-size:cover;background-position:center}
+.pl-cover.has-img::after{content:none}
+.pl-ic{overflow:hidden}
+.pl-ic img{width:100%;height:100%;object-fit:contain;padding:3px;display:block}
+@media(max-width:900px){.pl-cover.has-img{height:120px}}

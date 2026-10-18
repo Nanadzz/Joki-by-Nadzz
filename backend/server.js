@@ -31,6 +31,9 @@ const seed=()=>{const b=uid();return{
  orders:[],ledger:[],payouts:[],txs:{},idem:{},refresh:{}}};
 let db=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):seed();
 const cleanWa=n=>String(n||'').replace(/\D/g,'').replace(/^0/,'62');
+const cleanName=n=>{const t=String(n??'').trim().replace(/\s+/g,' ').slice(0,60);if(t.length<2)throw err(400,'Nama minimal 2 karakter');return t};
+const checkWa=n=>{const w=cleanWa(n);if(w&&!/^\d{9,15}$/.test(w))throw err(400,'Nomor WhatsApp tidak valid (contoh: 08123456789)');return w};
+const cleanSkills=a=>{const games=[...new Set(db.services.map(s=>s.gameName))],sk=[...new Set((Array.isArray(a)?a:[]).filter(x=>games.includes(x)))];if(!sk.length)throw err(400,'Pilih minimal satu game');return sk};
 // migrasi data lama + nilai bawaan
 const migrate=()=>{
 db.tickets=db.tickets||[];db.settings={adminWhatsapp:'6285656317710',brand:'Nadzz Joki',...db.settings};
@@ -48,10 +51,8 @@ db.services.forEach(s=>{s.category=s.category||'Lainnya';s.unit=s.unit||'paket';
 db.meta.deletedSkus=db.meta.deletedSkus||[];db.gameArt=db.gameArt||{}; // deletedSkus: item bawaan yang dihapus admin agar tidak ditambahkan lagi saat server restart
 if(!db.meta.catalogV){const DEMO=['Spiral Abyss Lantai 9-12 Full Clear','Daily Commission + Resin 7 Hari','Memory of Chaos Full Star','Joki Rank Epic ke Legend (per bintang)'];
  db.services.forEach(s=>{if(!s.sku&&DEMO.includes(s.title))s.active=false});db.meta.catalogV=1}
-CATALOG.forEach((c,i)=>{if(!db.meta.deletedSkus.includes(c.sku)&&!db.services.some(s=>s.sku===c.sku))db.services.push(svc({...c,sort:i}))});
-};migrate();
-const RC=new Map(); // render cache: respons JSON publik (sudah di-gzip) disimpan di memori, dikosongkan setiap data berubah
-const save=()=>{RC.clear();fs.writeFileSync(FILE+'.tmp',JSON.stringify(db));fs.renameSync(FILE+'.tmp',FILE)}; // tulis atomik
+CATALOG.forEach((c,i)=>{if(!db.services.some(s=>s.sku===c.sku))db.services.push(svc({...c,sort:i}))});
+const save=()=>{fs.writeFileSync(FILE+'.tmp',JSON.stringify(db));fs.renameSync(FILE+'.tmp',FILE)}; // tulis atomik
 save();
 
 // ---------- ledger (append-only, tanpa delete) ----------
@@ -212,6 +213,14 @@ app.get('/api/booster/orders/:id/credentials',auth('BOOSTER'),h(req=>{const o=bo
 app.post('/api/booster/payouts',auth('BOOSTER'),h(req=>{const a=Math.floor(+req.body.amount);if(!(a>0)||a>balance(req.user.sub))throw err(400,'Saldo tidak cukup');
  const p={id:uid(),boosterId:req.user.sub,amount:a,status:'PENDING',requestedAt:now()};db.payouts.push(p);return p}));
 
+// Profil akun (semua role): ganti nama tampilan & email tanpa edit data.json
+const uview=u=>({id:u.id,email:u.email,role:u.role,displayName:u.displayName});
+app.get('/api/auth/me',auth(),h(req=>uview(db.users.find(x=>x.id===req.user.sub)||nf())));
+app.put('/api/auth/profile',auth(),limit(30),h(req=>{const u=db.users.find(x=>x.id===req.user.sub)||nf(),r=req.body;
+ const name='displayName'in r?cleanName(r.displayName):u.displayName;let email=u.email;
+ if('email'in r){email=String(r.email||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw err(400,'Format email tidak valid');if(db.users.some(x=>x.id!==u.id&&x.email===email))throw err(409,'Email sudah dipakai akun lain')}
+ u.displayName=name;u.email=email;return{user:uview(u)}}));
+
 // Admin
 const adm=auth('ADMIN');
 app.get('/api/admin/data',adm,h(()=>({settings:db.settings,services:db.services.map(pubSvc),games:[...new Set(db.services.map(s=>s.gameName))].map(g=>({gameName:g,...gameArt(g)})),orders:db.orders.map(view).reverse(),boosters:db.boosters.map(bv),payouts:db.payouts,report:rep(),ledger:db.ledger.slice(-50).reverse(),tickets:db.tickets.slice().reverse()})));
@@ -294,3 +303,17 @@ app.post('/api/admin/tickets/:id/reply',adm,h(req=>{const t=db.tickets.find(x=>x
 app.use((req,res)=>req.path.startsWith('/api/')?res.status(404).json({error:'Endpoint tidak ditemukan'}):res.status(404).sendFile(path.join(FRONT,'404.html')));
 app.use((e,req,res,next)=>res.status(e.status||500).json({error:e.status===400?'Permintaan tidak valid':'Kesalahan server'}));
 app.listen(process.env.PORT||3000,()=>console.log('Nadzz Joki berjalan di http://localhost:'+(process.env.PORT||3000)));
+
+const syncJsonWithDb = async (updatedData) => {
+    try {
+        // Memperbarui state memory 'db' di Node.js dengan data terbaru
+        if (updatedData) {
+            db.orders = updatedData; 
+        }
+        // Menuliskan perubahan ke data.json menggunakan fungsi bawaan Anda
+        save(); 
+        console.log('🔄 File data.json berhasil disinkronkan!');
+    } catch (error) {
+        console.error('❌ Gagal sinkronisasi ke data.json:', error);
+    }
+};

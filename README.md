@@ -47,18 +47,3 @@ Follow these steps to run the project locally:
 
 ## 📝 License
 This project is licensed under the MIT License.
-
-## Performa & render cache
-- **CSS statis**: Tailwind tidak lagi dikompilasi di browser (CDN). Setelah menambah/mengubah class Tailwind di `frontend/*.html` atau `frontend/js/**/*.js`, jalankan `npm install` lalu `npm run build:css` di folder root dan commit `frontend/css/tailwind.css`.
-- **Render cache server**: `/api/catalog`, `/api/workers`, `/api/config` dibangun sekali, di-gzip, diberi ETag (balasan 304), dan dikosongkan otomatis setiap data berubah.
-- **Render cache browser**: data publik terakhir disimpan di localStorage sehingga halaman langsung tampil, lalu diperbarui diam-diam bila ada perubahan (`snap()` di `frontend/js/api.js`).
-- Di folder `backend` jalankan `npm install` agar `compression` (gzip untuk file statis) ikut terpasang.
-
-## Kelola katalog (Panel Admin > Layanan)
-Tambah/hapus layanan, unggah gambar tiap layanan (otomatis diubah ke webp 192×192), serta unggah icon & banner game. Item bawaan yang dihapus tidak muncul lagi setelah restart; klik "Pulihkan item bawaan yang terhapus" untuk mengembalikannya.
-
-## Cadangan data (Panel Admin > Cadangan)
-- **Unduh cadangan**: seluruh data (akun, layanan, gambar, pesanan, keuangan) menjadi satu file `.json`. File ini berisi hash sandi dan kredensial terenkripsi, jadi simpan di tempat aman.
-- **Pulihkan dari cadangan**: mengganti seluruh data server dengan isi file (wajib mengetik `IMPOR`). Data sebelumnya disalin dulu ke folder volume sebagai `data.json.sebelum-impor-<waktu>` (3 salinan terakhir). Setelah berhasil, login ulang.
-- Kredensial akun game hanya bisa dibuka jika `ENC_KEY` server sama dengan saat cadangan dibuat.
-

@@ -117,11 +117,12 @@ async order(id){if(S?.user.role!=='CUSTOMER'){toast('Masuk sebagai pelanggan unt
   try{await api('/orders',{body:b,headers:{'Idempotency-Key':key}});toast('Pesanan dibuat — lanjutkan pembayaran');location.hash='#/orders';if(dp){setTimeout(()=>{dp.prompt();dp=null},800)}}catch(x){toast(x.message)}}},
 
 async akun(){if(!S)return location.href='/login.html';
- view.innerHTML=`<h2>Akun Saya</h2><p class="mu" style="margin-bottom:16px">${esc(S.user.displayName)} · ${esc(S.user.email)}</p><div class="card" style="max-width:520px"><h3>Ganti kata sandi</h3><form id="cp" style="margin-top:14px">
+ view.innerHTML=`<h2>Akun Saya</h2><p class="mu" style="margin-bottom:16px">${esc(S.user.displayName)} · ${esc(S.user.email)}</p><div class="card" style="max-width:520px;margin-bottom:16px"><h3>Profil akun</h3><form id="ap" style="margin-top:14px"><label>Nama tampilan<input name="displayName" value="${esc(S.user.displayName)}" minlength="2" maxlength="60" required></label><label>Email<input name="email" type="email" value="${esc(S.user.email)}" required></label><button class="btn">Simpan profil</button></form></div><div class="card" style="max-width:520px"><h3>Ganti kata sandi</h3><form id="cp" style="margin-top:14px">
   <label>Sandi saat ini<input name="currentPassword" type="password" autocomplete="current-password" required></label>
   <label>Sandi baru (min. 8 karakter)<input name="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
   <label>Ulangi sandi baru<input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
   <button class="btn">Simpan sandi</button></form></div>`;
+ $('#ap').onsubmit=async e=>{e.preventDefault();const f=fd(e.target);try{const r=await api('/auth/profile',{method:'PUT',body:{displayName:f.displayName,email:f.email}});S.user=r.user;setS(S);nav();R.akun();toast('Profil akun tersimpan')}catch(x){toast(x.message)}};
  $('#cp').onsubmit=async e=>{e.preventDefault();const f=fd(e.target);if(f.newPassword!==f.confirm)return toast('Ulangi sandi baru tidak sama');
   try{setS(await P('/auth/change-password',{currentPassword:f.currentPassword,newPassword:f.newPassword}));e.target.reset();toast('Sandi berhasil diganti')}catch(x){toast(x.message)}}},
 async orders(){if(!S)return location.href='/login.html';const l=await api('/orders');
@@ -170,19 +171,10 @@ async admin(tab='laporan'){if(S?.user.role!=='ADMIN')return location.href='/logi
  const sub=(id,fn)=>$(id)&&($(id).onsubmit=async e=>{e.preventDefault();try{await fn(fd(e.target));toast('Tersimpan');R.admin(tab)}catch(x){toast(x.message)}});
  sub('#ex',b=>P('/admin/expenses',b));
  view.querySelectorAll('[data-p]').forEach(i=>i.onchange=()=>P('/admin/services',{id:i.dataset.p,basePrice:i.value}).then(()=>toast('Harga diperbarui')).catch(x=>toast(x.message)));
- view.querySelectorAll('[data-sa]').forEach(i=>i.onchange=()=>P('/admin/services',{id:i.dataset.sa,active:i.checked}).then(()=>toast(i.checked?'Layanan diaktifkan':'Layanan disembunyikan')).catch(x=>toast(x.message)));sub('#sv',async b=>{const f=$('#svimg')?.files[0];if(f)b.image=await cropImg(f,192,192,'contain',140000);return P('/admin/services',b)});
- const run=(p,ok)=>p.then(()=>{toast(ok);R.admin(tab)}).catch(x=>toast(x.message));
- view.querySelectorAll('[data-si]').forEach(i=>i.onchange=()=>{const f=i.files[0];f&&cropImg(f,192,192,'contain',140000).then(d=>run(P('/admin/services',{id:i.dataset.si,image:d}),'Gambar tersimpan')).catch(x=>toast(x.message))});
- view.querySelectorAll('[data-sx]').forEach(b=>b.onclick=()=>run(P('/admin/services',{id:b.dataset.sx,image:''}),'Gambar dihapus'));
- view.querySelectorAll('[data-sd]').forEach(b=>b.onclick=()=>confirm('Hapus "'+b.dataset.t+'" dari katalog? Riwayat pesanan tetap aman.')&&run(api('/admin/services/'+b.dataset.sd,{method:'DELETE'}),'Item dihapus'));
- view.querySelectorAll('[data-gi]').forEach(i=>i.onchange=()=>{const f=i.files[0];f&&cropImg(f,128,128,'cover',110000).then(d=>run(P('/admin/games',{gameName:i.dataset.gi,icon:d}),'Icon game tersimpan')).catch(x=>toast(x.message))});
- view.querySelectorAll('[data-gb]').forEach(i=>i.onchange=()=>{const f=i.files[0];f&&cropImg(f,800,300,'cover',220000).then(d=>run(P('/admin/games',{gameName:i.dataset.gb,banner:d}),'Banner tersimpan')).catch(x=>toast(x.message))});
- view.querySelectorAll('[data-gr]').forEach(b=>b.onclick=()=>run(P('/admin/games',{gameName:b.dataset.gr,[b.dataset.k]:''}),'Dikembalikan ke gambar bawaan'));
- $('#rs')&&($('#rs').onclick=()=>run(P('/admin/services-restore',{}),'Item bawaan dipulihkan'));
- $('#bkx')&&($('#bkx').onclick=async()=>{try{const d=await api('/admin/export'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download=`nadzz-backup-${new Date().toISOString().slice(0,16).replace(/[-:T]/g,'')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2e4);toast('Cadangan diunduh')}catch(x){toast(x.message)}});
- $('#bkm')&&($('#bkm').onclick=async()=>{const f=$('#bki').files[0];if(!f)return toast('Pilih file cadangan dulu');if($('#bkc').value.trim()!=='IMPOR')return toast('Ketik IMPOR untuk melanjutkan');
-  try{const j=JSON.parse(await f.text()),r=await P('/admin/import',{data:j.data||j});alert(`Pemulihan berhasil: ${r.users} akun, ${r.services} layanan, ${r.orders} pesanan. Silakan login ulang.`);setS(null);location.href='/login.html'}catch(x){toast(x.message)}});sub('#st',b=>api('/admin/settings',{method:'PUT',body:b}));
+ view.querySelectorAll('[data-sa]').forEach(i=>i.onchange=()=>P('/admin/services',{id:i.dataset.sa,active:i.checked}).then(()=>toast(i.checked?'Layanan diaktifkan':'Layanan disembunyikan')).catch(x=>toast(x.message)));sub('#sv',b=>P('/admin/services',b));sub('#st',b=>api('/admin/settings',{method:'PUT',body:b}));
  view.querySelectorAll('[data-ba]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.ba,{method:'PUT',body:{active:i.checked}}).then(()=>{toast(i.checked?'Worker diaktifkan':'Worker dinonaktifkan');setTimeout(()=>location.reload(),500)}).catch(x=>toast(x.message)));
+ view.querySelectorAll('[data-bn]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.bn,{method:'PUT',body:{displayName:i.value}}).then(r=>{i.value=r.displayName;toast('Nama worker diperbarui')}).catch(x=>toast(x.message)));
+ view.querySelectorAll('[data-bw]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.bw,{method:'PUT',body:{whatsapp:i.value}}).then(r=>{i.value=r.whatsapp;toast('WhatsApp worker diperbarui')}).catch(x=>toast(x.message)));
  view.querySelectorAll('[data-b]').forEach(i=>i.onchange=()=>api('/admin/boosters/'+i.dataset.b,{method:'PUT',body:{sharePercentage:i.value}}).then(()=>toast('Komisi diperbarui')).catch(x=>toast(x.message)))}
 };
 function nav(){const r=S?.user.role,L=[['/index.html','Beranda'],['/pricelist.html','Pricelist'],['/pesan.html','Pesan'],['/worker.html','Worker'],['/cs.html','Customer Service'],['/track.html','Cek Transaksi']];
@@ -190,5 +182,6 @@ function nav(){const r=S?.user.role,L=[['/index.html','Beranda'],['/pricelist.ht
  $('#nav').innerHTML=L.map(([h,t])=>`<a href="${h}" class="${location.hash===h||(!location.hash&&h==='#/')?'on':''}">${t}</a>`).join('')+(S?`<a href="#" onclick="ACT.logout();return false">Keluar (${esc(S.user.displayName)})</a>`:'<a href="/login.html">Masuk / Daftar</a>')}
 function route(){clearInterval(timer);const[p,a]=location.hash.replace(/^#\/?/,'').split('/');if(!p)return location.replace(S?({ADMIN:'#/admin',BOOSTER:'#/booster'}[S.user.role]||'#/orders'):'/index.html');nav();(R[p||'home']||R.home)(a).catch(e=>view.innerHTML=`<p class="err">${e.message}</p>`)}
 addEventListener('hashchange',route);route();
+if(S)api('/auth/me').then(u=>{if(['displayName','email','role'].some(k=>u[k]!==S.user[k])){const rc=u.role!==S.user.role;S.user=u;setS(S);nav();if(rc)route()}}).catch(()=>{}); // sinkronkan nama/email/role yang tersimpan di browser dengan server
 if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');
 </script><script type="module" src="/js/fx.js"></script></body></html>
