@@ -316,4 +316,5 @@ const syncJsonWithDb = async (updatedData) => {
     } catch (error) {
         console.error('❌ Gagal sinkronisasi ke data.json:', error);
     }
+}
 };

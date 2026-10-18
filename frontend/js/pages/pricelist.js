@@ -36,14 +36,14 @@ const total=()=>st.svc?Math.round(st.svc.basePrice*st.qty*(st.svc.tiers?.[st.tie
 function renderGames(){
  $('#games').innerHTML=st.games.map((g,i)=>{const t=themeOf(gameArt(g)),min=Math.min(...g.services.map(s=>s.basePrice));
   return `<button type="button" class="pl-game ${i===st.g?'on':''}" data-act="game" data-i="${i}" aria-pressed="${i===st.g}" style="--c1:${t.c1};--c2:${t.c2}">
-   <span class="pl-emb">${esc(t.ini)}</span><span><span class="pl-gn">${esc(g.gameName)}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
+   <span class="pl-emb">${esc(t.ini)}</span><span><span class="pl-gn">${esc(gameArt(g))}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
 
 function renderInfo(){
  const g=cur(),t=themeOf(gameArt(g)),min=Math.min(...g.services.map(s=>s.basePrice)),
   wa=st.wa?waLink(st.wa,`Halo Admin ${st.brand}, saya ingin bertanya soal pricelist joki ${gameArt(g)}.`):'/cs.html';
  $('#info').setAttribute('style',`--c1:${t.c1};--c2:${t.c2}`);
  $('#info').innerHTML=`<div class="pl-cover" data-ini="${esc(t.ini)}"></div><div class="pl-ib">
-  <div class="pl-gname">${esc(g.gameName)}</div><div class="pl-from">Mulai dari <b>${rp(min)}</b></div><p class="pl-blurb">${esc(t.blurb)}</p>
+  <div class="pl-gname">${esc(gameArt(g))}</div><div class="pl-from">Mulai dari <b>${rp(min)}</b></div><p class="pl-blurb">${esc(t.blurb)}</p>
   <ul class="pl-feat"><li><span>🔐</span><span>Kredensial dienkripsi dan dihapus setelah pesanan selesai</span></li><li><span>📈</span><span>Progres bisa dilacak dengan kode pesanan</span></li><li><span>🛟</span><span>Sengketa dan refund ditangani admin</span></li></ul>
   <div class="pl-how"><h3>Cara pesan</h3><ol><li>Pilih paket dan atur jumlah</li><li>Isi UID, server, dan data akun</li><li>Bayar lunas, lalu pantau progres</li></ol></div>
   <a class="pl-wa" href="${wa}" target="_blank" rel="noopener">Tanya admin via WhatsApp</a>
@@ -94,8 +94,10 @@ let applied=false; // game dari #hash dipilih sekali (bisa baru ketemu setelah d
 snap(['/catalog','/config'],([cat,c])=>{
   st.games=cat.games.filter(g=>g.services.length);st.brand=c.brand||st.brand;st.wa=c.adminWhatsapp||'';
   if(!st.games.length)throw new Error('kosong');
-  const i=st.games.findIndex(g=>slug(g.gameName)===decodeURIComponent(location.hash.slice(1)));if(i>=0)st.g=i;
+  const i=st.games.findIndex(g=>slug(gameArt(g))===decodeURIComponent(location.hash.slice(1)));if(i>=0)st.g=i;
   draw()}
- catch{$('#games').innerHTML='';$('#info').style.display='none';$('#bar').style.display='none';document.querySelector('.pl-layout').style.display='block';
+ catch(e){
+  console.error(e);
+  $('#games').innerHTML='';$('#info').style.display='none';$('#bar').style.display='none';document.querySelector('.pl-layout').style.display='block';
   $('#sections').innerHTML='<div class="pl-sec"><p class="pl-empty">Pricelist belum bisa dimuat. Pastikan server berjalan, lalu muat ulang halaman.</p></div>'}
 })();
