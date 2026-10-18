@@ -429,8 +429,8 @@ app.use((e, req, res, next) => res.status(e.status || 500).json({ error: e.statu
 
 // Server Execution
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server Nadzz Joki berjalan di http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 app.get('/api/health', (req, res) => {
