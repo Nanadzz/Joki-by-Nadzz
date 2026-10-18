@@ -13,7 +13,9 @@
 .pl-game:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}
 .pl-game.on{border-color:var(--c1);background:var(--pl-card2)}
 .pl-game.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1.5px;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,var(--c1),var(--c2))}
-.pl-emb{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-family:Sora,sans-serif;font-weight:700;font-size:1rem;color:#05080f;background:linear-gradient(135deg,var(--c1),var(--c2))}
+.pl-emb{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-family:Sora,sans-serif;font-weight:700;font-size:1rem;color:#05080f;background:linear-gradient(135deg,var(--c1),var(--c2));position:relative;overflow:hidden;transition:box-shadow .18s}
+.pl-emb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pl-game.on .pl-emb{box-shadow:0 0 0 2px var(--c1),0 0 18px -2px var(--c1)}
 .pl-gn{display:block;font-weight:700;font-size:.95rem}
 .pl-gc{display:block;font-size:.76rem;color:var(--pl-mut);margin-top:2px}
 .pl-gc b{color:#e6f7fb;font-weight:600}
@@ -21,7 +23,10 @@
 /* ── tata letak ── */
 .pl-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px;align-items:start}
 .pl-info{position:sticky;top:84px;background:var(--pl-card);border:1px solid var(--pl-line);border-radius:18px;overflow:hidden}
-.pl-cover{height:112px;display:grid;place-items:center;background:linear-gradient(135deg,var(--c1),var(--c2))}
+.pl-cover{position:relative;aspect-ratio:8/3;max-height:170px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,var(--c1),var(--c2))}
+.pl-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+.pl-cover.has-img::before{content:"";position:absolute;inset:auto 0 0 0;height:38%;background:linear-gradient(to top,var(--pl-card),transparent);z-index:1;pointer-events:none}
+.pl-cover.has-img::after{display:none}
 .pl-cover::after{content:attr(data-ini);font-family:Sora,sans-serif;font-weight:800;font-size:4.4rem;letter-spacing:-.04em;color:rgba(0,0,0,.2)}
 .pl-ib{padding:16px 18px 18px}
 .pl-gname{font-family:Sora,sans-serif;font-weight:700;font-size:1.15rem}
@@ -58,7 +63,8 @@
 .pl-item.on{border-color:var(--cy);background:rgba(45,226,230,.07)}
 .pl-item.on::after{content:"✓";position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:99px;display:grid;place-items:center;font-size:.8rem;font-weight:800;color:#02040a;background:var(--cy)}
 .pl-r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.pl-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:1rem;background:rgba(255,255,255,.06)}
+.pl-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;background:rgba(255,255,255,.06);overflow:hidden}
+.pl-ic img{width:100%;height:100%;object-fit:contain;display:block}
 .pl-tag{font-size:.64rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.16rem .55rem;border-radius:99px;background:rgba(182,109,255,.16);color:#d7b2ff}
 .pl-tag.hot{background:rgba(255,170,40,.15);color:#ffc14d}
 .pl-tag.save{background:rgba(52,211,153,.14);color:#6ee7b7}
@@ -99,7 +105,7 @@
 .pl-skel{height:158px;border-radius:14px;background:linear-gradient(90deg,#0a1420,#0f1d2d,#0a1420);background-size:200% 100%;animation:pl-sh 1.2s linear infinite}
 @keyframes pl-sh{to{background-position:-200% 0}}
 
-@media(max-width:900px){.pl-layout{grid-template-columns:1fr}.pl-info{position:static}.pl-cover{height:84px}.pl-cover::after{font-size:3.2rem}}
+@media(max-width:900px){.pl-layout{grid-template-columns:1fr}.pl-info{position:static}.pl-cover{max-height:150px}.pl-cover::after{font-size:3.2rem}}
 @media(max-width:600px){.pl-bar{flex-wrap:wrap;bottom:10px}.pl-bx{width:100%;justify-content:space-between}.pl-grid{grid-template-columns:1fr 1fr;gap:10px}.pl-item{padding:12px;min-height:150px}}
 @media(max-width:380px){.pl-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.pl-game,.pl-item,.pl-skel{transition:none;animation:none}}

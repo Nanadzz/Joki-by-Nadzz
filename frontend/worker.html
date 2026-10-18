@@ -2,14 +2,15 @@
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Worker — Nadzz Joki</title><meta name="description" content="Kenali worker Nadzz Joki dan hubungi langsung lewat WhatsApp.">
 <meta name="theme-color" content="#02040a"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/nadzzjoki.webp" type="image/webp">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script><script src="/js/tailwind.config.js"></script><link rel="stylesheet" href="/css/theme.css"><link rel="stylesheet" href="/css/fx.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/tailwind.css"><link rel="stylesheet" href="/css/theme.css"><link rel="stylesheet" href="/css/fx.css"><link rel="stylesheet" href="/css/idcard.css">
+<link rel="preload" href="/api/workers" as="fetch" crossorigin><link rel="preload" href="/api/config" as="fetch" crossorigin><link rel="modulepreload" href="/js/api.js"><link rel="modulepreload" href="/js/layout.js"><link rel="modulepreload" href="/js/pages/worker.js">
 </head><body class="min-h-screen"><div id="site-header"></div>
 <main class="mx-auto max-w-6xl px-5 py-10">
  <h1 class="text-3xl font-bold mb-2">Info <span class="grad-text">worker</span></h1><p class="text-slate-400 mb-6">Lihat skill dan ketersediaan worker, lalu konsultasi langsung lewat WhatsApp.</p>
  <div class="glass rounded-2xl p-4 grid sm:grid-cols-[1fr_200px_auto] gap-3 mb-6 items-center"><input id="q" class="field" placeholder="Cari nama worker..."><select id="g" class="field"><option value="">Semua game</option></select>
   <label class="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" id="av"> Hanya yang tersedia</label></div>
- <p id="cnt" class="text-sm text-slate-500 mb-4"></p><div id="grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+ <p id="cnt" class="text-sm text-slate-500 mb-4"></p><div id="grid" class="idc-list"></div>
  <div class="glass rounded-2xl p-6 mt-10 flex flex-wrap items-center justify-between gap-4"><div><h2 class="font-semibold">Ingin jadi worker?</h2><p class="text-sm text-slate-400">Daftar sebagai worker, atur ketersediaan, dan terima bagi hasil per pesanan.</p></div><a href="/login.html#daftar" class="btn-grad rounded-xl px-6 py-2.5">Daftar Worker</a></div>
 </main>
 <div id="site-footer"></div><script type="module" src="/js/pages/worker.js"></script></body></html>

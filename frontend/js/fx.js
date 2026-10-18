@@ -1,5 +1,5 @@
 // Efek neon: garis pinggir elemen menyala dengan gradasi yang mengikuti posisi kursor (juga sentuhan)
-const SEL='.glass,.card,.btn,.btn-grad,.btn-line,.tab',RANGE=240;
+const SEL='.glass,.card,.btn,.btn-grad,.btn-line,.tab,.idc-face',RANGE=240;
 let px=-9999,py=-9999,raf=0;
 function tag(){document.querySelectorAll(SEL).forEach(el=>{if(el.classList.contains('neon'))return;el.classList.add('neon');
  if(getComputedStyle(el).position==='static')el.style.position='relative'})}
