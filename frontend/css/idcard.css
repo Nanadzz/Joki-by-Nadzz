@@ -1,0 +1,77 @@
+/* Kartu ID worker: tali lanyard + klip, kartu bisa dibalik (flip). Efek glow & neon pengikut kursor
+   tetap dari fx.css/fx.js (kelas .idc-face ikut didaftarkan di SEL pada js/fx.js). */
+.idc-list{display:flex;flex-wrap:wrap;justify-content:center;gap:2.75rem 2.5rem}
+.idc{--cw:300px;--ln2:rgba(103,232,249,.16);flex:0 1 auto;width:min(100%,var(--cw));margin-inline:auto;position:relative}
+
+/* --- gantungan: tali + klip, berayun pelan dari titik atas --- */
+.idc-hang{display:flex;flex-direction:column;align-items:center;transform-origin:50% 0;animation:idc-swing 7s ease-in-out infinite}
+.idc:nth-child(2n) .idc-hang{animation-delay:-2.3s}.idc:nth-child(3n) .idc-hang{animation-delay:-4.1s}
+.idc:hover .idc-hang,.idc.is-flipped .idc-hang,.idc:focus-within .idc-hang{animation-play-state:paused}
+@keyframes idc-swing{0%,100%{transform:rotate(1.7deg)}50%{transform:rotate(-1.7deg)}}
+
+.idc-strap{position:relative;width:clamp(20px,7vw,28px);height:clamp(44px,12vw,78px);border-radius:3px 3px 0 0;
+ background:repeating-linear-gradient(135deg,rgba(255,255,255,.08) 0 6px,transparent 6px 12px),linear-gradient(180deg,#0b8795,#6f3fc4);
+ box-shadow:inset 3px 0 0 rgba(255,255,255,.18),inset -3px 0 0 rgba(0,0,0,.28),0 0 16px rgba(45,226,230,.28)}
+.idc-strap::after{content:"";position:absolute;inset:0 7px;border-inline:1.5px dashed rgba(255,255,255,.28)}           /* jahitan tali */
+.idc-ring{position:absolute;top:-10px;left:50%;width:15px;height:15px;margin-left:-7.5px;border-radius:50%;border:2.5px solid #b7c4d2;box-shadow:0 0 8px rgba(45,226,230,.5)}
+.idc-clip{position:relative;z-index:3;width:clamp(30px,10vw,40px);height:clamp(20px,6vw,26px);margin-top:-2px;border-radius:5px 5px 10px 10px;
+ background:linear-gradient(180deg,#eef3f8,#8e9cac 55%,#cbd5df);box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 #fff}
+.idc-clip::before{content:"";position:absolute;left:50%;top:50%;width:46%;height:3px;margin:-1.5px 0 0 -23%;border-radius:3px;background:rgba(0,0,0,.28)}
+.idc-clip::after{content:"";position:absolute;left:50%;bottom:-13px;width:12px;height:18px;margin-left:-6px;border:2.5px solid #aab6c3;border-top:0;border-radius:0 0 9px 9px}
+
+/* --- kartu --- */
+.idc-flip{position:relative;width:100%;margin-top:-5px;perspective:1200px}
+.idc-flip::before{content:"";position:absolute;inset:9% 2% 0;z-index:-1;border-radius:32px;pointer-events:none;opacity:.65;filter:blur(26px);transition:opacity .35s;
+ background:radial-gradient(60% 55% at 50% 45%,rgba(45,226,230,.3),rgba(182,109,255,.2) 60%,transparent 76%)}    /* glow di belakang kartu */
+.idc:hover .idc-flip::before,.idc.is-flipped .idc-flip::before{opacity:1}
+.idc-card{position:relative;width:100%;aspect-ratio:5/8;cursor:pointer;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.8,.2,1);-webkit-tap-highlight-color:transparent}
+.idc-card.is-flipped{transform:rotateY(180deg)}
+.idc-face{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:18px;font-size:14px;
+ background:linear-gradient(165deg,rgba(17,36,51,.98),rgba(6,11,20,.99));border:1px solid var(--ln2);
+ backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.idc-back{transform:rotateY(180deg)}
+.idc-face[inert]{pointer-events:none}
+
+/* lubang untuk klip */
+.idc-slot{align-self:center;flex:none;width:46px;height:9px;margin-top:-2px;border-radius:9px;background:#02040a;box-shadow:inset 0 2px 3px rgba(0,0,0,.9),0 0 0 1.5px rgba(255,255,255,.12)}
+
+.idc-top{flex:none;display:flex;align-items:center;gap:8px}
+.idc-top img{width:26px;height:26px;border-radius:50%;flex:none}
+.idc-top b{display:block;font:700 .78rem/1.1 Sora,sans-serif;letter-spacing:.1em;background:linear-gradient(135deg,var(--cy),var(--vi));-webkit-background-clip:text;background-clip:text;color:transparent}
+.idc-top span{display:block;font-size:.6rem;letter-spacing:.18em;color:#7f93a3;margin-top:2px}
+.idc-st{margin-left:auto;font-style:normal;font-size:.68rem;padding:.18rem .6rem;border-radius:99px}
+.idc-st.ok{background:rgba(52,211,153,.12);color:#6ee7b7}.idc-st.no{background:rgba(251,191,36,.12);color:#fcd34d}
+
+.idc-photo{position:relative;flex:1;min-height:0;border-radius:12px;overflow:hidden;border:1px solid var(--ln2);
+ background:radial-gradient(90% 70% at 50% 25%,rgba(45,226,230,.16),transparent 70%),linear-gradient(160deg,#0d1d2b,#070d17)}
+.idc-photo svg{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.idc-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}
+
+.idc-info{flex:none;padding-right:38px;min-height:3.1rem}
+.idc-info h3{font-size:1.15rem;line-height:1.2;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idc-meta{display:flex;align-items:center;gap:.6rem;margin-top:.2rem;font-size:.72rem;color:#7f93a3}
+.idc-meta .idc-id{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em}
+.idc-meta .idc-rt{color:var(--cy)}
+
+.idc-turn{position:absolute;z-index:2;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:1rem;line-height:1;color:var(--cy);
+ background:rgba(45,226,230,.08);border:1px solid rgba(45,226,230,.4);cursor:pointer;transition:background .2s,transform .2s}
+.idc-turn:hover{background:rgba(45,226,230,.2)}.idc-turn:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+.idc-front .idc-turn{right:14px;bottom:14px}
+.idc-back .idc-turn{right:14px;top:10px}
+
+/* sisi belakang */
+.idc-back .idc-top{padding-right:38px}
+.idc-bd{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:.55rem}
+.idc-bd h4{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cy)}
+.idc-bd p{font-size:.82rem;line-height:1.45;color:#9db0bd;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.idc-skills{display:flex;flex-wrap:wrap;gap:.35rem}
+.idc-stats{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:auto}
+.idc-stats div{padding:.5rem .6rem;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--ln2)}
+.idc-stats b{display:block;font:700 1.05rem/1.1 Sora,sans-serif}.idc-stats span{font-size:.64rem;color:#7f93a3}
+.idc-wa{flex:none;display:block;padding:.6rem 0;font-size:.85rem}
+.idc-bar{flex:none;height:18px;border-radius:2px;opacity:.55;
+ background:repeating-linear-gradient(90deg,#cfeff3 0 2px,transparent 2px 4px,#cfeff3 4px 5px,transparent 5px 8px,#cfeff3 8px 11px,transparent 11px 12px,#cfeff3 12px 13px,transparent 13px 16px)}
+
+/* layar sangat sempit: kartu menyusut, teks tetap muat */
+@media (max-width:360px){.idc-face{padding:12px;font-size:13px}.idc-info h3{font-size:1.05rem}}
+@media (prefers-reduced-motion:reduce){.idc-hang{animation:none}.idc-card{transition-duration:.01s}.idc-flip::before{transition:none}}

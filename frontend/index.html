@@ -2,8 +2,9 @@
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jasa Joki Game Terpercaya — Nadzz Joki</title><meta name="description" content="Nadzz Joki: jasa joki game dengan harga transparan, worker terverifikasi, dan pelacakan progres.">
 <meta name="theme-color" content="#02040a"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icons/nadzzjoki.webp" type="image/webp">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script><script src="/js/tailwind.config.js"></script><link rel="stylesheet" href="/css/theme.css"><link rel="stylesheet" href="/css/fx.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/tailwind.css"><link rel="stylesheet" href="/css/theme.css"><link rel="stylesheet" href="/css/fx.css"><link rel="stylesheet" href="/css/idcard.css">
+<link rel="preload" href="/api/catalog" as="fetch" crossorigin><link rel="preload" href="/api/workers" as="fetch" crossorigin><link rel="preload" href="/api/config" as="fetch" crossorigin><link rel="modulepreload" href="/js/api.js"><link rel="modulepreload" href="/js/layout.js"><link rel="modulepreload" href="/js/pages/landing.js">
 </head><body class="min-h-screen"><div id="site-header"></div>
 <main>
 <section class="mx-auto max-w-6xl px-5 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
@@ -26,7 +27,7 @@
  <div id="tabs" class="flex gap-2 overflow-x-auto pb-2 mb-5"></div><div id="lst" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div></section>
 <section id="cara" class="mx-auto max-w-6xl px-5 py-12"><h2 class="text-2xl md:text-3xl font-bold mb-8">Cara <span class="grad-text">pemesanan</span></h2>
  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="steps"></div></section>
-<section class="mx-auto max-w-6xl px-5 py-12"><div class="flex items-end justify-between mb-6"><h2 class="text-2xl md:text-3xl font-bold">Worker <span class="grad-text">kami</span></h2><a href="/worker.html" class="text-cy text-sm">Lihat semua →</a></div><div id="wk" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div></section>
+<section class="mx-auto max-w-6xl px-5 py-12"><div class="flex items-end justify-between mb-6"><h2 class="text-2xl md:text-3xl font-bold">Worker <span class="grad-text">kami</span></h2><a href="/worker.html" class="text-cy text-sm">Lihat semua →</a></div><div id="wk" class="idc-list"></div></section>
 <section id="faq" class="mx-auto max-w-3xl px-5 py-12"><h2 class="text-2xl md:text-3xl font-bold mb-6 text-center">Pertanyaan <span class="grad-text">umum</span></h2><div id="faqs" class="grid gap-3"></div></section>
 <section class="mx-auto max-w-4xl px-5 py-12"><div class="glass glow rounded-3xl p-10 text-center"><h2 class="text-2xl md:text-3xl font-bold mb-3">Siap naik level?</h2><p class="text-slate-400 mb-6">Pesan sekarang atau tanyakan dulu ke tim kami.</p><div class="flex justify-center flex-wrap gap-3"><a href="/pesan.html" class="btn-grad rounded-xl px-7 py-3">Pesan Sekarang</a><a href="/cs.html" class="btn-line rounded-xl px-7 py-3">Customer Service</a></div></div></section>
 </main>
