@@ -30,15 +30,18 @@ const svc = (o = {}) => {
   };
 };
 const seed = () => {
-  const b = uid(); return {
-    users: [{ id: uid(), email: 'admin@chaa.id', passwordHash: hashPw('admin123'), role: 'ADMIN', displayName: 'Admin Chaa' },
-    { id: b, email: 'booster@chaa.id', passwordHash: hashPw('booster123'), role: 'BOOSTER', displayName: 'Penjoki Nadzz' }],
-    boosters: [{ userId: b, skills: ['Genshin Impact', 'Honkai Star Rail', 'Mobile Legends'], maxConcurrentOrders: 3, sharePercentage: null, rating: 5, active: true, lastAssignedAt: 0, availability: [], whatsapp: '6289501350962', bio: 'Spesialis Genshin & Star Rail, pengerjaan rapi dan komunikatif.', showWhatsapp: true, photo: '', photoAt: 0 }],
+  // Admin awal: ADMIN_EMAIL / ADMIN_PASSWORD dari env (bawaan lokal: admin@chaa.id / admin123). Akun demo booster hanya dibuat di luar production.
+  const b = uid(), prod = process.env.NODE_ENV === 'production';
+  return {
+    users: [{ id: uid(), email: (process.env.ADMIN_EMAIL || 'admin@chaa.id').trim().toLowerCase(), passwordHash: hashPw(process.env.ADMIN_PASSWORD || 'admin123'), role: 'ADMIN', displayName: 'Admin Chaa' },
+    ...(prod ? [] : [{ id: b, email: 'booster@chaa.id', passwordHash: hashPw('booster123'), role: 'BOOSTER', displayName: 'Penjoki Nadzz' }])],
+    boosters: prod ? [] : [{ userId: b, skills: ['Genshin Impact', 'Honkai Star Rail', 'Mobile Legends'], maxConcurrentOrders: 3, sharePercentage: null, rating: 5, active: true, lastAssignedAt: 0, availability: [], whatsapp: '6289501350962', bio: 'Spesialis Genshin & Star Rail, pengerjaan rapi dan komunikatif.', showWhatsapp: true, photo: '', photoAt: 0 }],
     services: [],
     settings: { commissionPct: 20, assignMode: 'auto', assignTimeoutMin: 15, autoConfirmHours: 24, gatewayFeeBp: 70 },
     orders: [], ledger: [], payouts: [], txs: {}, idem: {}, refresh: {}
   };
 };
+try { fs.mkdirSync(path.dirname(FILE), { recursive: true }); } catch { }
 let db = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, 'utf8')) : seed();
 const cleanWa = n => String(n || '').replace(/\D/g, '').replace(/^0/, '62');
 const cleanName = n => { const t = String(n ?? '').trim().replace(/\s+/g, ' ').slice(0, 60); if (t.length < 2) throw err(400, 'Nama minimal 2 karakter'); return t; };
@@ -65,7 +68,21 @@ const migrate = () => {
   CATALOG.forEach((c, i) => { if (!db.services.some(s => s.sku === c.sku)) db.services.push(svc({ ...c, sort: i })); });
 };
 const save = () => { fs.writeFileSync(FILE + '.tmp', JSON.stringify(db)); fs.renameSync(FILE + '.tmp', FILE); };
+// Di production, akun yang masih memakai sandi bawaan (admin123 / booster123) tidak boleh aktif: sandinya diganti.
+function hardenAccounts() {
+  const prod = process.env.NODE_ENV === 'production', ae = (process.env.ADMIN_EMAIL || '').trim().toLowerCase(), ap = process.env.ADMIN_PASSWORD || '';
+  const isDefault = u => ['admin123', 'booster123'].some(p => { try { return checkPw(p, u.passwordHash); } catch { return false; } });
+  if (ae && ap.length >= 8 && !db.users.some(u => u.email === ae)) db.users.push({ id: uid(), email: ae, passwordHash: hashPw(ap), role: 'ADMIN', displayName: 'Admin' });
+  if (!prod) return;
+  for (const u of db.users.filter(isDefault)) {
+    const pw = u.role === 'ADMIN' ? (ap.length >= 8 ? ap : crypto.randomBytes(9).toString('base64url')) : crypto.randomBytes(18).toString('base64url');
+    u.passwordHash = hashPw(pw);
+    for (const t in db.refresh) if (db.refresh[t].uid === u.id) delete db.refresh[t];
+    console.warn(u.role === 'ADMIN' ? `[KEAMANAN] Sandi bawaan admin ${u.email} diganti. ${ap.length >= 8 ? 'Masuk dengan ADMIN_PASSWORD.' : 'Sandi sementara: ' + pw + ' (segera ganti di menu Akun)'}` : `[KEAMANAN] Akun ${u.email} memakai sandi bawaan dan dikunci (sandi diacak).`);
+  }
+}
 migrate();
+hardenAccounts();
 save();
 
 // ---------- ledger ----------
@@ -134,7 +151,9 @@ setInterval(() => {
 
 // ---------- HTTP ----------
 const app = express(), FRONT = path.join(__dirname, '../frontend');
-app.disable('x-powered-by'); if (process.env.TRUST_PROXY) app.set('trust proxy', 1);
+app.disable('x-powered-by');
+const TP = process.env.TRUST_PROXY || (process.env.RAILWAY_ENVIRONMENT ? '1' : '');
+if (TP) app.set('trust proxy', /^\d+$/.test(TP) ? +TP : TP);
 app.use((req, res, next) => { res.set({ 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()' }); next(); });
 const jsonSmall = express.json({ limit: '300kb', verify: (req, _, buf) => { req.raw = buf; } }), jsonBig = express.json({ limit: '40mb' });
 app.use((req, res, next) => req.path === '/api/admin/import' ? auth('ADMIN')(req, res, () => jsonBig(req, res, next)) : jsonSmall(req, res, next));
@@ -150,9 +169,9 @@ const hits = {}, limit = (max, win = 9e5) => (req, res, next) => { const k = req
 setInterval(() => { for (const k in hits) if (!hits[k].length || now() - hits[k].at(-1) > 9e5) delete hits[k]; }, 36e5).unref();
 
 // Health Check Endpoint (Khusus Railway & Uptime Monitoring)
-app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', message: 'Server running smooth', timestamp: new Date().toISOString() }));
+app.get(['/api/health', '/health'], (req, res) => res.status(200).set('Cache-Control', 'no-store').json({ ok: true, status: 'ok', message: 'Server running smooth', uptime: Math.round(process.uptime()), timestamp: new Date().toISOString() }));
 
-const h = fn => (req, res) => { try { const r = fn(req, res); if (req.method !== 'GET') save(); res.json(r); } catch (e) { res.status(e.code || 500).json({ error: e.message }); } };
+const h = fn => (req, res) => { try { const r = fn(req, res); if (req.method !== 'GET') { save(); RC.clear(); } res.json(r); } catch (e) { res.status(e.code || 500).json({ error: e.message }); } };
 
 // ---------- render cache ----------
 const RC = new Map();
@@ -185,7 +204,7 @@ const gameArt = g => { const a = db.gameArt[g] || {}; return { icon: imgUrl('gam
 app.get('/api/img/:kind/:id', (req, res) => {
   const k = req.params.kind, id = req.params.id;
   const d = k === 'service' ? db.services.find(x => x.id === id)?.image : k === 'game-icon' ? db.gameArt[id]?.icon : k === 'game-banner' ? db.gameArt[id]?.banner : '';
-  const m = /^data:(image\/[a-z]+);base64,(.+)\$/.exec(d || '');
+  const m = /^data:(image\/[a-z]+);base64,(.+)$/.exec(d || '');
   if (!m) return res.status(404).json({ error: 'Gambar tidak ditemukan' });
   res.set({ 'Content-Type': m[1], 'Cache-Control': 'public, max-age=31536000, immutable' }).send(Buffer.from(m[2], 'base64'));
 });
@@ -227,7 +246,8 @@ app.post('/api/auth/login', limit(20), h(req => {
 app.post('/api/auth/refresh', h(req => {
   const r = db.refresh[req.body.refreshToken]; delete db.refresh[req.body.refreshToken];
   if (!r || r.exp < now()) throw err(401, 'Sesi berakhir');
-  return session(db.users.find(u => u.id === r.uid));
+  const u = db.users.find(x => x.id === r.uid); if (!u) throw err(401, 'Sesi berakhir');
+  return session(u);
 }));
 
 app.post('/api/auth/change-password', auth(), limit(10), h(req => {
@@ -251,7 +271,7 @@ app.get('/api/track/:code', h(req => {
 // Customer
 const mine = req => db.orders.find(o => o.id === req.params.id && o.customerId === req.user.sub) || nf();
 app.post('/api/orders', auth('CUSTOMER'), h(req => {
-  const k = req.headers['idempotency-key']; if (k && db.idem[k]) return view(db.orders.find(o => o.id === db.idem[k]));
+  const k = req.headers['idempotency-key'], prev = k && db.idem[k] && db.orders.find(o => o.id === db.idem[k] && o.customerId === req.user.sub); if (prev) return view(prev);
   const { serviceId, tier = 'standard', qty, gameUid, server, accountLogin, accountPassword, targetDescription, notes } = req.body;
   const s = db.services.find(x => x.id === serviceId && x.active) || nf(), m = s.tiers[tier];
   if (!m) throw err(400, 'Tier tidak valid');
@@ -296,7 +316,7 @@ app.put('/api/booster/availability', auth('BOOSTER'), h(req => {
   dispatch(); return bv(b);
 }));
 app.post('/api/booster/orders/:id/accept', auth('BOOSTER'), h(req => { const o = bord(req); go(o, 'IN_PROGRESS'); return view(o); }));
-app.post('/api/booster/orders/:id/reject', auth('BOOSTER'), h(req => { const o = bord(req); o.excluded.push(o.boosterId); o.boosterId = null; go(o, 'QUEUED', 'Ditolak penjoki'); dispatch(); return view(o); }));
+app.post('/api/booster/orders/:id/reject', auth('BOOSTER'), h(req => { const o = bord(req); if (o.status !== 'ASSIGNED') throw err(409, 'Hanya order berstatus Ditugaskan yang bisa ditolak'); o.excluded.push(o.boosterId); o.boosterId = null; go(o, 'QUEUED', 'Ditolak penjoki'); dispatch(); return view(o); }));
 app.post('/api/booster/orders/:id/claim', auth('BOOSTER'), h(req => { const b = me(req), o = db.orders.find(x => x.id === req.params.id) || nf(); if (db.settings.assignMode !== 'broadcast' || o.status !== 'QUEUED' || !eligible(b, o)) throw err(409, 'Order tidak bisa diambil'); assign(o, b); go(o, 'IN_PROGRESS', 'Direbut penjoki'); return view(o); }));
 app.post('/api/booster/orders/:id/progress', auth('BOOSTER'), h(req => { const o = bord(req); if (o.status !== 'IN_PROGRESS') throw err(409, 'Order tidak sedang dikerjakan'); o.progress = Math.min(99, Math.max(0, +req.body.progress || 0)); o.history.push({ status: 'IN_PROGRESS', at: now(), note: `Progres ${o.progress}%` }); return view(o); }));
 app.post('/api/booster/orders/:id/complete', auth('BOOSTER'), h(req => { const o = bord(req); go(o, 'COMPLETED'); o.progress = 100; o.completedAt = now(); o.gameAccountInfo = null; return view(o); }));
@@ -310,7 +330,7 @@ app.put('/api/auth/profile', auth(), limit(30), h(req => {
   const u = db.users.find(x => x.id === req.user.sub) || nf(), r = req.body;
   const name = 'displayName' in r ? cleanName(r.displayName) : u.displayName;
   let email = u.email;
-  if ('email' in r) { email = String(r.email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+\$/.test(email)) throw err(400, 'Format email tidak valid'); if (db.users.some(x => x.id !== u.id && x.email === email)) throw err(409, 'Email sudah dipakai akun lain'); }
+  if ('email' in r) { email = String(r.email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw err(400, 'Format email tidak valid'); if (db.users.some(x => x.id !== u.id && x.email === email)) throw err(409, 'Email sudah dipakai akun lain'); }
   u.displayName = name; u.email = email; return { user: uview(u) };
 }));
 
@@ -318,7 +338,7 @@ app.put('/api/auth/profile', auth(), limit(30), h(req => {
 const adm = auth('ADMIN');
 app.get('/api/admin/data', adm, h(() => ({ settings: db.settings, services: db.services.map(pubSvc), games: [...new Set(db.services.map(s => s.gameName))].map(g => ({ gameName: g, ...gameArt(g) })), orders: db.orders.map(view).reverse(), boosters: db.boosters.map(bv), payouts: db.payouts, report: rep(), ledger: db.ledger.slice(-50).reverse(), tickets: db.tickets.slice().reverse() })));
 app.get('/api/admin/reports', adm, h(req => rep(req.query.from ? Date.parse(req.query.from) : 0, req.query.to ? Date.parse(req.query.to) + 864e5 - 1 : now())));
-app.put('/api/admin/settings', adm, h(req => { for (const k of Object.keys(db.settings)) if (req.body[k] !== undefined) db.settings[k] = k === 'adminWhatsapp' ? cleanWa(req.body[k]) : k === 'brand' ? String(req.body[k]).slice(0, 40) || 'Nadzz Joki' : k === 'assignMode' ? (req.body[k] === 'broadcast' ? 'broadcast' : 'auto') : Math.max(0, +req.body[k]); dispatch(); return db.settings; }));
+app.put('/api/admin/settings', adm, h(req => { for (const k of Object.keys(db.settings)) if (req.body[k] !== undefined) db.settings[k] = k === 'adminWhatsapp' ? cleanWa(req.body[k]) : k === 'brand' ? String(req.body[k]).slice(0, 40) || 'Nadzz Joki' : k === 'assignMode' ? (req.body[k] === 'broadcast' ? 'broadcast' : 'auto') : (req.body[k] !== '' && Number.isFinite(+req.body[k]) ? Math.max(0, k === 'commissionPct' ? Math.min(100, +req.body[k]) : +req.body[k]) : db.settings[k]); dispatch(); return db.settings; }));
 app.post('/api/admin/services', adm, h(req => {
   const b = req.body;
   if (b.image && !imgOk(String(b.image), 150000)) throw err(400, 'Gambar tidak valid: gunakan webp/jpeg/png, maks. ±110 KB');
@@ -373,17 +393,17 @@ app.post('/api/admin/expenses', adm, h(req => { const a = Math.floor(+req.body.a
 
 // ===== Konfigurasi publik & Customer Service =====
 const wk = o => { const b = db.boosters.find(x => x.userId === o.boosterId); return b && ['IN_PROGRESS', 'COMPLETED'].includes(o.status) ? { displayName: db.users.find(u => u.id === b.userId)?.displayName, whatsapp: b.showWhatsapp && b.whatsapp ? b.whatsapp : null } : null; };
-app.get('/api/config', cached(() => ({ brand: db.settings.brand, adminWhatsapp: db.settings.adminWhatsapp })));
+app.get('/api/config', cached(() => ({ brand: db.settings.brand, adminWhatsapp: db.settings.adminWhatsapp, sandbox: process.env.NODE_ENV !== 'production' })));
 
 const photoOk = p => {
-  const m = /^data:image\/(webp|jpeg|png);base64,([A-Za-z0-9+/=]+)\$/.exec(p);
+  const m = /^data:image\/(webp|jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(p);
   if (!m || p.length > 230000) return false;
   const x = Buffer.from(m[2].slice(0, 24), 'base64');
   return m[1] === 'webp' ? x.subarray(0, 4).toString() === 'RIFF' && x.subarray(8, 12).toString() === 'WEBP' : m[1] === 'png' ? x[0] === 0x89 && x.subarray(1, 4).toString() === 'PNG' : x[0] === 0xff && x[1] === 0xd8;
 };
 const photoUrl = b => !b.photo ? '' : b.photo.startsWith('data:') ? `/api/workers/${b.userId}/photo?v=${b.photoAt || 0}` : b.photo;
 app.get('/api/workers/:id/photo', (req, res) => {
-  const b = db.boosters.find(x => x.userId === req.params.id && x.active), m = b && /^data:(image\/[a-z]+);base64,(.+)\$/.exec(b.photo || '');
+  const b = db.boosters.find(x => x.userId === req.params.id && x.active), m = b && /^data:(image\/[a-z]+);base64,(.+)$/.exec(b.photo || '');
   if (!m) return res.status(404).json({ error: 'Foto tidak ditemukan' });
   res.set({ 'Content-Type': m[1], 'Cache-Control': 'public, max-age=86400' }).send(Buffer.from(m[2], 'base64'));
 });
@@ -425,12 +445,16 @@ app.use((req, res) => req.path.startsWith('/api/') ? res.status(404).json({ erro
 // Global Error Handler
 app.use((e, req, res, next) => {
   console.error('Server Error:', e);
-  const statusCode = e.code && Number.isInteger(e.code) && e.code >= 400 && e.code < 600 ? e.code : 500;
+  const statusCode = [e.code, e.status, e.statusCode].find(n => Number.isInteger(n) && n >= 400 && n < 600) || 500;
   res.status(statusCode).json({ error: e.message || 'Kesalahan internal server' });
 });
 
 // Server Execution
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
+server.on('error', e => { console.error('Gagal membuka port', PORT, e.message); process.exit(1); });
+// Railway mengirim SIGTERM saat redeploy: simpan data dulu agar tidak ada yang hilang
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { try { save(); } catch { } process.exit(0); });
+process.on('unhandledRejection', e => console.error('unhandledRejection:', e));

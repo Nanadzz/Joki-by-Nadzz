@@ -39,7 +39,8 @@ $('#next').onclick=async()=>{
  const b=Object.fromEntries(new FormData($('#f')));b.serviceId=st.svc.id;b.tier=st.tier;b.qty=st.qty;
  $('#next').disabled=true;
  try{const o=await api('/orders',{body:b,headers:{'Idempotency-Key':key}});const p=await api(`/orders/${o.id}/pay`,{method:'POST'});let paid=false;
-  if(confirm(`Bayar ${rp(p.amount)} lewat gateway sandbox?`)){await api(`/orders/${o.id}/simulate-pay`,{method:'POST'});paid=true}
+  const cf=await config().catch(()=>({}));
+  if(cf.sandbox&&confirm(`Bayar ${rp(p.amount)} lewat gateway sandbox?`)){await api(`/orders/${o.id}/simulate-pay`,{method:'POST'});paid=true}
   done(o,paid)}catch(x){toast(x.message,'err')}finally{$('#next').disabled=false}};
 async function done(o,paid){const c=await config().catch(()=>({brand:'Nadzz Joki'}));
  ['p1','p2','p3','nav'].forEach(id=>$('#'+id).classList.add('hidden'));$('#done').classList.remove('hidden');

@@ -1,4 +1,6 @@
 node_modules/
 data.json
-data.json.tmp
+data.json.*
 .env
+.env.js
+*.log

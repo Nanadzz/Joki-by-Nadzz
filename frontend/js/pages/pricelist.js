@@ -1,7 +1,7 @@
 // Halaman Pricelist — data diambil dari /api/catalog, jadi harga yang diubah admin langsung tampil di sini.
 import {$,rp,esc,waLink,snap} from '/js/api.js';
 import {mountLayout} from '/js/layout.js';
-import {gameArt,itemIcon} from '/js/icons.js';
+import {gameArt as artOf,itemIcon} from '/js/icons.js';
 mountLayout('pricelist');
 
 // Tampilan per game (hanya warna & teks; nama game harus sama persis dengan di katalog/skill worker)
@@ -34,16 +34,16 @@ const catsOf=g=>[...new Set(g.services.map(s=>s.category||'Lainnya'))];
 const total=()=>st.svc?Math.round(st.svc.basePrice*st.qty*(st.svc.tiers?.[st.tier]||1)):0;
 
 function renderGames(){
- $('#games').innerHTML=st.games.map((g,i)=>{const t=themeOf(gameArt(g)),min=Math.min(...g.services.map(s=>s.basePrice));
+ $('#games').innerHTML=st.games.map((g,i)=>{const t=themeOf(g.gameName),a=artOf(g),min=Math.min(...g.services.map(s=>s.basePrice));
   return `<button type="button" class="pl-game ${i===st.g?'on':''}" data-act="game" data-i="${i}" aria-pressed="${i===st.g}" style="--c1:${t.c1};--c2:${t.c2}">
-   <span class="pl-emb">${esc(t.ini)}</span><span><span class="pl-gn">${esc(gameArt(g))}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
+   <span class="pl-emb">${esc(t.ini)}${a?.icon?`<img src="${esc(a.icon)}" alt="" width="52" height="52" loading="lazy" decoding="async" onerror="this.remove()">`:''}</span><span><span class="pl-gn">${esc(g.gameName)}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
 
 function renderInfo(){
- const g=cur(),t=themeOf(gameArt(g)),min=Math.min(...g.services.map(s=>s.basePrice)),
-  wa=st.wa?waLink(st.wa,`Halo Admin ${st.brand}, saya ingin bertanya soal pricelist joki ${gameArt(g)}.`):'/cs.html';
+ const g=cur(),t=themeOf(g.gameName),a=artOf(g),min=Math.min(...g.services.map(s=>s.basePrice)),
+  wa=st.wa?waLink(st.wa,`Halo Admin ${st.brand}, saya ingin bertanya soal pricelist joki ${g.gameName}.`):'/cs.html';
  $('#info').setAttribute('style',`--c1:${t.c1};--c2:${t.c2}`);
- $('#info').innerHTML=`<div class="pl-cover" data-ini="${esc(t.ini)}"></div><div class="pl-ib">
-  <div class="pl-gname">${esc(gameArt(g))}</div><div class="pl-from">Mulai dari <b>${rp(min)}</b></div><p class="pl-blurb">${esc(t.blurb)}</p>
+ $('#info').innerHTML=`<div class="pl-cover ${a?.banner?'has-img':''}" data-ini="${esc(t.ini)}">${a?.banner?`<img src="${esc(a.banner)}" alt="" loading="lazy" decoding="async" onerror="const p=this.parentNode;this.remove();p.classList.remove('has-img')">`:''}</div><div class="pl-ib">
+  <div class="pl-gname">${esc(g.gameName)}</div><div class="pl-from">Mulai dari <b>${rp(min)}</b></div><p class="pl-blurb">${esc(t.blurb)}</p>
   <ul class="pl-feat"><li><span>🔐</span><span>Kredensial dienkripsi dan dihapus setelah pesanan selesai</span></li><li><span>📈</span><span>Progres bisa dilacak dengan kode pesanan</span></li><li><span>🛟</span><span>Sengketa dan refund ditangani admin</span></li></ul>
   <div class="pl-how"><h3>Cara pesan</h3><ol><li>Pilih paket dan atur jumlah</li><li>Isi UID, server, dan data akun</li><li>Bayar lunas, lalu pantau progres</li></ol></div>
   <a class="pl-wa" href="${wa}" target="_blank" rel="noopener">Tanya admin via WhatsApp</a>
@@ -73,7 +73,7 @@ function renderBar(){
  const s=st.svc,g=cur();
  if(!s){$('#bar').innerHTML=`<div class="pl-bsel"><div class="pl-bt">Belum ada paket dipilih</div><div class="pl-bn">Pilih paket di atas untuk melihat total</div></div><div class="pl-bx"><span class="pl-buy" aria-disabled="true">Pesan Sekarang</span></div>`;return}
  const per=s.unit!=='paket',href=`/pesan.html?service=${encodeURIComponent(s.id)}&tier=${st.tier}&qty=${st.qty}`;
- $('#bar').innerHTML=`<div class="pl-bsel"><div class="pl-bt">${esc(gameArt(g))} · ${st.tier==='express'?'Express':'Standar'} · est. ±${fmtH(s.estimatedHours*st.qty)}</div>
+ $('#bar').innerHTML=`<div class="pl-bsel"><div class="pl-bt">${esc(g.gameName)} · ${st.tier==='express'?'Express':'Standar'} · est. ±${fmtH(s.estimatedHours*st.qty)}</div>
   <div class="pl-bn">${esc(s.title)}${per?` × ${st.qty} ${esc(s.unit)}`:''}</div></div>
   <div class="pl-bx"><div class="pl-tot"><span class="pl-bt">Total</span><b>${rp(total())}</b></div><a class="pl-buy" href="${href}">Pesan Sekarang</a></div>`}
 
@@ -81,21 +81,21 @@ const draw=()=>{renderGames();renderInfo();renderSections();renderBar()};
 const setQty=v=>{const s=st.svc;if(!s)return;st.qty=Math.min(s.maxQty||1,Math.max(s.minQty||1,Math.floor(+v)||1));renderSections();renderBar()};
 
 document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||!st.games.length)return;const a=t.dataset.act;
- if(a==='game'){st.g=+t.dataset.i;st.cat=null;st.svc=null;st.qty=1;st.tier='standard';history.replaceState(null,'','#'+slug(gameArt(cur())));draw()}
+ if(a==='game'){st.g=+t.dataset.i;st.cat=null;st.svc=null;st.qty=1;st.tier='standard';history.replaceState(null,'','#'+slug(cur().gameName));draw()}
  else if(a==='cat'){st.cat=t.dataset.v;if(st.svc&&(st.svc.category||'Lainnya')!==st.cat)st.svc=null;renderSections();renderBar()}
  else if(a==='svc'){const x=cur().services.find(v=>v.id===t.dataset.id);if(!x)return;
   if(st.svc?.id!==x.id){st.svc=x;st.qty=1}if(!x.tiers?.[st.tier])st.tier='standard';renderSections();renderBar()}
  else if(a==='tier'){st.tier=t.dataset.v;renderSections();renderBar()}
  else if(a==='inc'||a==='dec')setQty(st.qty+(a==='inc'?1:-1))});
 document.addEventListener('change',e=>{if(e.target.id==='qty')setQty(e.target.value)});
-addEventListener('hashchange',()=>{const i=st.games.findIndex(g=>slug(gameArt(g))===decodeURIComponent(location.hash.slice(1)));if(i>=0&&i!==st.g){st.g=i;st.cat=null;st.svc=null;st.qty=1;draw()}});
+addEventListener('hashchange',()=>{const i=st.games.findIndex(g=>slug(g.gameName)===decodeURIComponent(location.hash.slice(1)));if(i>=0&&i!==st.g){st.g=i;st.cat=null;st.svc=null;st.qty=1;draw()}});
 
 let applied=false; // game dari #hash dipilih sekali (bisa baru ketemu setelah data segar tiba); setelah itu pilihan pengunjung dipertahankan
-snap(['/catalog','/config'],([cat,c])=>{
+(async()=>{try{await snap(['/catalog','/config'],([cat,c])=>{
   st.games=cat.games.filter(g=>g.services.length);st.brand=c.brand||st.brand;st.wa=c.adminWhatsapp||'';
   if(!st.games.length)throw new Error('kosong');
-  const i=st.games.findIndex(g=>slug(gameArt(g))===decodeURIComponent(location.hash.slice(1)));if(i>=0)st.g=i;
-  draw()}
+  const i=st.games.findIndex(g=>slug(g.gameName)===decodeURIComponent(location.hash.slice(1)));if(i>=0)st.g=i;
+  draw()})}
  catch(e){
   console.error(e);
   $('#games').innerHTML='';$('#info').style.display='none';$('#bar').style.display='none';document.querySelector('.pl-layout').style.display='block';
