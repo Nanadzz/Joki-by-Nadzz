@@ -3,7 +3,10 @@
 // dispatch penjoki, double-ledger (integer Rupiah, tanpa float), webhook idempoten, enkripsi AES-256-GCM.
 const express = require('express'), crypto = require('crypto'), fs = require('fs'), path = require('path'), zlib = require('zlib'), CATALOG = require('./catalog');
 const SECRET = process.env.JWT_SECRET || 'ganti-di-produksi', GW = process.env.GATEWAY_SECRET || 'gateway-secret';
-if (process.env.NODE_ENV === 'production' && !(process.env.JWT_SECRET && process.env.ENC_KEY && process.env.GATEWAY_SECRET)) { console.error('Production wajib mengatur JWT_SECRET, ENC_KEY, dan GATEWAY_SECRET'); process.exit(1); }
+if (process.env.NODE_ENV === 'production' && !(process.env.JWT_SECRET && process.env.ENC_KEY && process.env.GATEWAY_SECRET)) { 
+  console.error('Production wajib mengatur JWT_SECRET, ENC_KEY, dan GATEWAY_SECRET'); 
+  process.exit(1); 
+}
 const KEY = crypto.scryptSync(process.env.ENC_KEY || 'ganti-kunci-enkripsi', 'chaa-salt', 32);
 const FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json'), uid = () => crypto.randomUUID(), now = () => Date.now();
 const err = (code, msg) => Object.assign(new Error(msg), { code }), nf = () => { throw err(404, 'Data tidak ditemukan'); };
@@ -142,9 +145,13 @@ app.use(express.static(FRONT, {
     res.setHeader('Cache-Control', /[\\/](assets|icons)[\\/]/.test(f) ? 'public, max-age=86400, stale-while-revalidate=604800' : 'no-cache');
   }
 }));
+
 const hits = {}, limit = (max, win = 9e5) => (req, res, next) => { const k = req.path + req.ip, t = now(), a = hits[k] = (hits[k] || []).filter(x => t - x < win); if (a.length >= max) return res.status(429).json({ error: 'Terlalu banyak percobaan, coba lagi nanti' }); a.push(t); next(); };
 setInterval(() => { for (const k in hits) if (!hits[k].length || now() - hits[k].at(-1) > 9e5) delete hits[k]; }, 36e5).unref();
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// Health Check Endpoint (Khusus Railway & Uptime Monitoring)
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', message: 'Server running smooth', timestamp: new Date().toISOString() }));
+
 const h = fn => (req, res) => { try { const r = fn(req, res); if (req.method !== 'GET') save(); res.json(r); } catch (e) { res.status(e.code || 500).json({ error: e.message }); } };
 
 // ---------- render cache ----------
@@ -412,27 +419,18 @@ app.post('/api/admin/tickets/:id/reply', adm, h(req => {
   return tview(t);
 }));
 
-// Helper Sinkronisasi DB ke File JSON
-const syncJsonWithDb = async (updatedData) => {
-  try {
-    if (updatedData) db.orders = updatedData;
-    save();
-    console.log('🔄 File data.json berhasil disinkronkan!');
-  } catch (error) {
-    console.error('❌ Gagal sinkronisasi ke data.json:', error);
-  }
-};
-
-// 404 & Error Handlers
+// 404 Handler
 app.use((req, res) => req.path.startsWith('/api/') ? res.status(404).json({ error: 'Endpoint tidak ditemukan' }) : res.status(404).sendFile(path.join(FRONT, '404.html')));
-app.use((e, req, res, next) => res.status(e.status || 500).json({ error: e.status === 400 ? 'Permintaan tidak valid' : 'Kesalahan server' }));
+
+// Global Error Handler
+app.use((e, req, res, next) => {
+  console.error('Server Error:', e);
+  const statusCode = e.code && Number.isInteger(e.code) && e.code >= 400 && e.code < 600 ? e.code : 500;
+  res.status(statusCode).json({ error: e.message || 'Kesalahan internal server' });
+});
 
 // Server Execution
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server running smooth' });
 });
