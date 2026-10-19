@@ -1,30 +1,16 @@
 // Halaman Pricelist — data diambil dari /api/catalog, jadi harga yang diubah admin langsung tampil di sini.
 import {$,rp,esc,waLink,snap} from '/js/api.js';
 import {mountLayout} from '/js/layout.js';
-import {gameArt as artOf,itemIcon} from '/js/icons.js';
+import {gameArt,itemIcon} from '/js/icons.js';
 mountLayout('pricelist');
 
 // Tampilan per game (hanya warna & teks; nama game harus sama persis dengan di katalog/skill worker)
 const THEMES={
- 'Genshin Impact':{ini:'GI',c1:'#f7d27a',c2:'#e58a3b',icon:'/assets/games/genshin.webp',banner:'/assets/games/banner_genshin7.1.webp',blurb:'Joki Spiral Abyss, Imaginarium Theater, serta rawat akun harian sampai bulanan.'},
- 'Mobile Legends':{ini:'ML',c1:'#5db0ff',c2:'#3b5bdb',icon:'/assets/games/ml.webp',banner:'/assets/games/banner_laylacl.webp',blurb:'Joki rank per bintang atau paket naik tier. Hero dikerjakan sesuai permintaanmu.'},
- 'Honkai Star Rail':{ini:'HSR',c1:'#d2a2ff',c2:'#7a63ff',icon:'/assets/games/hsr.webp',banner:'/assets/games/banner_pearl.webp',blurb:'Joki Memory of Chaos, Pure Fiction, Apocalyptic Shadow, dan rawat akun.'}};
+ 'Genshin Impact':{ini:'GI',c1:'#f7d27a',c2:'#e58a3b',blurb:'Joki Spiral Abyss, Imaginarium Theater, serta rawat akun harian sampai bulanan.'},
+ 'Mobile Legends':{ini:'ML',c1:'#5db0ff',c2:'#3b5bdb',blurb:'Joki rank per bintang atau paket naik tier. Hero dikerjakan sesuai permintaanmu.'},
+ 'Honkai Star Rail':{ini:'HSR',c1:'#d2a2ff',c2:'#7a63ff',blurb:'Joki Memory of Chaos, Pure Fiction, Apocalyptic Shadow, dan rawat akun.'}};
 const themeOf=n=>THEMES[n]||{ini:String(n).split(/\s+/).map(w=>w[0]).join('').slice(0,3).toUpperCase(),c1:'#2de2e6',c2:'#b66dff',blurb:`Layanan joki ${n}.`};
 const UNIT={paket:{ic:'📦',per:''},bintang:{ic:'⭐',per:'/ bintang'},hari:{ic:'📅',per:'/ hari'}};
-// Ikon item per SKU → nama file di /assets/items/. SKU yang tidak ada di sini memakai emoji bawaan.
-// Untuk mengganti ikon: ubah nama file di sini (atau timpa file-nya dengan NAMA BARU agar cache tidak bentrok).
-const ITEM_ICON={
- // Genshin Impact
- 'gi-abyss-full':'Item_Primogem.webp','gi-abyss-9-10':'Item_Primogem.webp','gi-abyss-11':'Item_Primogem.webp','gi-abyss-12':'Item_Primogem.webp',
- 'gi-theater-easy':'System_Imaginarium_Theater.webp','gi-theater-normal':'System_Imaginarium_Theater.webp','gi-theater-hard':'System_Imaginarium_Theater.webp','gi-theater-visionary':'imaginarium-achievement-icon.webp',
- 'gi-daily':'Icon_World_Quest.webp','gi-resin':'Item_Condensed_Resin.webp',
- 'gi-weekly-2':'Icon_World_Quest.webp','gi-weekly-1':'Item_Condensed_Resin.webp','gi-monthly-1':'Icon_World_Quest.webp','gi-monthly-2':'Item_Condensed_Resin.webp',
- // Mobile Legends
- 'ml-epic':'Epic.webp','ml-legend':'Legend.webp','ml-mythic':'Mythic.webp','ml-honor':'Mythical_Honor.webp','ml-glory':'Mythical_Glory.webp','ml-immortal':'Mythical_Immortal.webp',
- 'ml-epic-legend':'Legend.webp','ml-legend-mythic':'Mythic.webp','ml-epic-mythic':'Mythic.webp','ml-gm-mythic':'Grandmaster.webp',
- // Honkai: Star Rail
- 'hsr-moc':'Item_Stellar_Jade.webp','hsr-pf':'Light_Cone_A_Thankless_Coronation_Icon.webp','hsr-as':'Light_Cone_For_Tomorrows_Journey_Icon.webp',
- 'hsr-endgame3':'Item_Star_Rail_Special_Pass.webp','hsr-daily':'Item_Stellar_Jade.webp','hsr-weekly':'Light_Cone_A_Dream_Scented_in_Wheat_Icon.webp','hsr-monthly':'Item_Star_Rail_Special_Pass.webp'};
 const slug=n=>String(n).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 const fmtH=h=>h<1?`${Math.max(1,Math.round(h*60))} mnt`:`${+(+h).toFixed(1)} jam`;
 
@@ -34,15 +20,15 @@ const catsOf=g=>[...new Set(g.services.map(s=>s.category||'Lainnya'))];
 const total=()=>st.svc?Math.round(st.svc.basePrice*st.qty*(st.svc.tiers?.[st.tier]||1)):0;
 
 function renderGames(){
- $('#games').innerHTML=st.games.map((g,i)=>{const t=themeOf(g.gameName),a=artOf(g),min=Math.min(...g.services.map(s=>s.basePrice));
+ $('#games').innerHTML=st.games.map((g,i)=>{const t=themeOf(g.gameName),min=Math.min(...g.services.map(s=>s.basePrice));
   return `<button type="button" class="pl-game ${i===st.g?'on':''}" data-act="game" data-i="${i}" aria-pressed="${i===st.g}" style="--c1:${t.c1};--c2:${t.c2}">
-   <span class="pl-emb">${esc(t.ini)}${a?.icon?`<img src="${esc(a.icon)}" alt="" width="52" height="52" loading="lazy" decoding="async" onerror="this.remove()">`:''}</span><span><span class="pl-gn">${esc(g.gameName)}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
+   <span class="pl-emb">${esc(t.ini)}${gameArt(g)?`<img src="${gameArt(g).icon}" alt="" width="52" height="52" decoding="async" onerror="this.remove()">`:''}</span><span><span class="pl-gn">${esc(g.gameName)}</span><span class="pl-gc">${g.services.length} layanan · mulai <b>${rp(min)}</b></span></span></button>`}).join('')}
 
 function renderInfo(){
- const g=cur(),t=themeOf(g.gameName),a=artOf(g),min=Math.min(...g.services.map(s=>s.basePrice)),
+ const g=cur(),t=themeOf(g.gameName),min=Math.min(...g.services.map(s=>s.basePrice)),
   wa=st.wa?waLink(st.wa,`Halo Admin ${st.brand}, saya ingin bertanya soal pricelist joki ${g.gameName}.`):'/cs.html';
  $('#info').setAttribute('style',`--c1:${t.c1};--c2:${t.c2}`);
- $('#info').innerHTML=`<div class="pl-cover ${a?.banner?'has-img':''}" data-ini="${esc(t.ini)}">${a?.banner?`<img src="${esc(a.banner)}" alt="" loading="lazy" decoding="async" onerror="const p=this.parentNode;this.remove();p.classList.remove('has-img')">`:''}</div><div class="pl-ib">
+ $('#info').innerHTML=`<div class="pl-cover${gameArt(g)?' has-img':''}" data-ini="${esc(t.ini)}">${gameArt(g)?`<img src="${gameArt(g).banner}" alt="Banner ${esc(g.gameName)}" width="800" height="300" decoding="async" onerror="this.parentNode.classList.remove('has-img');this.remove()">`:''}</div><div class="pl-ib">
   <div class="pl-gname">${esc(g.gameName)}</div><div class="pl-from">Mulai dari <b>${rp(min)}</b></div><p class="pl-blurb">${esc(t.blurb)}</p>
   <ul class="pl-feat"><li><span>🔐</span><span>Kredensial dienkripsi dan dihapus setelah pesanan selesai</span></li><li><span>📈</span><span>Progres bisa dilacak dengan kode pesanan</span></li><li><span>🛟</span><span>Sengketa dan refund ditangani admin</span></li></ul>
   <div class="pl-how"><h3>Cara pesan</h3><ol><li>Pilih paket dan atur jumlah</li><li>Isi UID, server, dan data akun</li><li>Bayar lunas, lalu pantau progres</li></ol></div>
@@ -91,13 +77,11 @@ document.addEventListener('change',e=>{if(e.target.id==='qty')setQty(e.target.va
 addEventListener('hashchange',()=>{const i=st.games.findIndex(g=>slug(g.gameName)===decodeURIComponent(location.hash.slice(1)));if(i>=0&&i!==st.g){st.g=i;st.cat=null;st.svc=null;st.qty=1;draw()}});
 
 let applied=false; // game dari #hash dipilih sekali (bisa baru ketemu setelah data segar tiba); setelah itu pilihan pengunjung dipertahankan
-(async()=>{try{await snap(['/catalog','/config'],([cat,c])=>{
+snap(['/catalog','/config'],([cat,c])=>{
   st.games=cat.games.filter(g=>g.services.length);st.brand=c.brand||st.brand;st.wa=c.adminWhatsapp||'';
   if(!st.games.length)throw new Error('kosong');
-  const i=st.games.findIndex(g=>slug(g.gameName)===decodeURIComponent(location.hash.slice(1)));if(i>=0)st.g=i;
-  draw()})}
- catch(e){
-  console.error(e);
-  $('#games').innerHTML='';$('#info').style.display='none';$('#bar').style.display='none';document.querySelector('.pl-layout').style.display='block';
-  $('#sections').innerHTML='<div class="pl-sec"><p class="pl-empty">Pricelist belum bisa dimuat. Pastikan server berjalan, lalu muat ulang halaman.</p></div>'}
-})();
+  const hi=applied?-1:st.games.findIndex(g=>slug(g.gameName)===decodeURIComponent(location.hash.slice(1)));
+  if(hi>=0){st.g=hi;applied=true;st.cat=null;st.svc=null;st.qty=1}
+  else{if(st.g>=st.games.length)st.g=0;const sv=st.svc&&st.games[st.g].services.find(v=>v.id===st.svc.id);st.svc=sv||null;if(!sv)st.qty=1}
+  draw()}).catch(()=>{$('#games').innerHTML='';$('#info').style.display='none';$('#bar').style.display='none';document.querySelector('.pl-layout').style.display='block';
+  $('#sections').innerHTML='<div class="pl-sec"><p class="pl-empty">Pricelist belum bisa dimuat. Pastikan server berjalan, lalu muat ulang halaman.</p></div>'});

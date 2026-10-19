@@ -65,9 +65,10 @@ const migrate = () => {
     const DEMO = ['Spiral Abyss Lantai 9-12 Full Clear', 'Daily Commission + Resin 7 Hari', 'Memory of Chaos Full Star', 'Joki Rank Epic ke Legend (per bintang)'];
     db.services.forEach(s => { if (!s.sku && DEMO.includes(s.title)) s.active = false; }); db.meta.catalogV = 1;
   }
-  CATALOG.forEach((c, i) => { if (!db.services.some(s => s.sku === c.sku)) db.services.push(svc({ ...c, sort: i })); });
+  CATALOG.forEach((c, i) => { if (!db.meta.deletedSkus.includes(c.sku) && !db.services.some(s => s.sku === c.sku)) db.services.push(svc({ ...c, sort: i })); }); // item bawaan yang dihapus admin tidak ditambahkan lagi
 };
-const save = () => { fs.writeFileSync(FILE + '.tmp', JSON.stringify(db)); fs.renameSync(FILE + '.tmp', FILE); };
+const RC = new Map(); // render cache: respons JSON publik (sudah di-gzip), dikosongkan setiap data berubah
+const save = () => { RC.clear(); fs.writeFileSync(FILE + '.tmp', JSON.stringify(db)); fs.renameSync(FILE + '.tmp', FILE); };
 // Di production, akun yang masih memakai sandi bawaan (admin123 / booster123) tidak boleh aktif: sandinya diganti.
 function hardenAccounts() {
   const prod = process.env.NODE_ENV === 'production', ae = (process.env.ADMIN_EMAIL || '').trim().toLowerCase(), ap = process.env.ADMIN_PASSWORD || '';
@@ -174,7 +175,6 @@ app.get(['/api/health', '/health'], (req, res) => res.status(200).set('Cache-Con
 const h = fn => (req, res) => { try { const r = fn(req, res); if (req.method !== 'GET') { save(); RC.clear(); } res.json(r); } catch (e) { res.status(e.code || 500).json({ error: e.message }); } };
 
 // ---------- render cache ----------
-const RC = new Map();
 const cached = build => (req, res) => {
   try {
     let e = RC.get(req.path);
