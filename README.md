@@ -43,13 +43,7 @@ Follow these steps to run the project locally:
 4. Run the development server (http://localhost:3000):
    ```bash
    npm run dev
-   ```
-   Akun demo lokal: `admin@chaa.id / admin123` dan `booster@chaa.id / booster123` (hanya dibuat jika `NODE_ENV` bukan production).
-
-## 🚀 Deploy
-**Backend (Railway)** — deploy dari repo ini (memakai `Dockerfile` + `railway.json`). Isi Variables sesuai `backend/.env.example` (wajib: `NODE_ENV`, `JWT_SECRET`, `ENC_KEY`, `GATEWAY_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`). Jangan mengisi `PORT`; Railway menyuntikkannya otomatis. Pasang Volume di `/data` dan set `DATA_FILE=/data/data.json` supaya data tidak hilang saat redeploy. Cek: `https://<domain-railway>/api/health` → `{"ok":true,...}`.
-
-**Frontend (Vercel)** — `vercel.json` sudah meneruskan `/api/*` ke backend Railway. Jika domain Railway berubah, ganti URL pada `vercel.json` dan `frontend/vercel.json`.
+   ``'
 
 ## 📝 License
 This project is licensed under the MIT License.
