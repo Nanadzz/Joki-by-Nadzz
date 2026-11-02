@@ -1,13 +1,13 @@
-const namaUMKM = "Nadzz Joki";
+const namaweb= "Nadzz Joki";
 const pemilik = "Nadzz yang tergabung dengan Nexaio.id";
 const jenisUsaha = "Jasa Joki Game";
 
-alert("Halo, selamat datang di " + namaUMKM + "!");
-alert("Kami adalah " + jenisUsaha + " yang dikelola oleh " + pemilik + ".");
-alert("Silakan lihat pricelist kami dan pesan layanan favoritmu di " + namaUMKM + ". Terima kasih!");
+alert("Halo, selamat datang di " + namaweb + "!");
+alert("Kami menyediakan layanan " + jenisUsaha + " yang dikelola oleh " + pemilik + ".");
+alert("Silakan lihat pricelist kami dan pesan layanan favoritmu di " + namaweb + ". Terima kasih!");
 
 console.log("===== DATA USAHA =====");
-console.log("Nama UMKM  :", namaUMKM);
+console.log("Nama Website  :", namaweb);
 console.log("Pemilik    :", pemilik);
 console.log("Jenis usaha:", jenisUsaha);
 
@@ -89,7 +89,7 @@ console.log("Sisa bagi jumlah produk dengan 5 (%):", jumlahProduk % 5);
 
 const sedangBuka = true;
 console.log("===== STATUS =====");
-console.log("Apakah " + namaUMKM + " sedang buka?", sedangBuka);
+console.log("Apakah " + namaweb + " sedang buka?", sedangBuka);
 
 console.table([
   { game: "Genshin Impact", produk: produkGenshin },
@@ -97,4 +97,4 @@ console.table([
   { game: "Honkai Star Rail", produk: produkHonkaiStarRail },
 ]);
 
-console.log("Selesai. Terima kasih telah mengunjungi " + namaUMKM + "!");
+console.log("Terima kasih telah mengunjungi " + namaweb + ", semoga anda puas dengan pelayanan kami!");
