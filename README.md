@@ -20,7 +20,7 @@ index (landing) · pricelist (daftar harga per game) · login · pesan (3 langka
 backend/server.js (API) · backend/catalog.js (katalog harga default) · frontend/css/theme.css · frontend/js/{api,layout,components,faq}.js · frontend/js/pages/*.js · sw.js · manifest.json
 
 ## Harga & katalog
-Harga di katalog adalah harga sesuai acuan pasar pada Oktiber 2026.
+Harga di katalog adalah harga sesuai acuan pasar pada Oktober & November 2026.
 
 ## Menambah worker
 Daftar lewat `/login.html#daftar` (pilih Worker, centang game, isi WhatsApp). Nama game di skill harus persis: `Genshin Impact`, `Mobile Legends`, `Honkai Star Rail`.
